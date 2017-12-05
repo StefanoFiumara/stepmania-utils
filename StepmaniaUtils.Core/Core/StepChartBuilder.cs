@@ -12,6 +12,10 @@ namespace StepmaniaUtils.Core
             if (referenceChart == null)
                 throw new ArgumentNullException(nameof(referenceChart), "referenceChart cannot be null.");
 
+            if (!referenceChart.Measures.Any())
+            {
+                throw new ArgumentException("Reference chart does not contain Measure Data", nameof(referenceChart));
+            }
 
             var lightChart = new StepData(PlayStyle.Lights, SongDifficulty.Easy, difficultyRating: 1, chartAuthor: "Auto-Generated");
 

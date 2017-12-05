@@ -9,7 +9,7 @@ namespace StepmaniaUtils.StepChart
 
         public ColumnData(string columns)
         {
-            this.Columns = columns;
+            Columns = columns;
         }
     }
 }

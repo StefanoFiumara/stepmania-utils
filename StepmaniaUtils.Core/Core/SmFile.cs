@@ -13,30 +13,44 @@ namespace StepmaniaUtils.Core
         public string Group { get; set; }
         public string BannerPath { get; set; }
         public string Artist { get; set; }
-        public string Directory => this.SmFileInfo.DirectoryName;
+        public string Directory { get; set; }
+        
+        public string FilePath { get; }
 
-        private FileInfo SmFileInfo { get; set; }
-
-        public SmFile(FileInfo smFile)
+        public SmFile(string filePath)
         {
-            this.SmFileInfo = smFile;
-
-            if (this.SmFileInfo.Exists == false || this.SmFileInfo.Extension.ToLower() != ".sm")
+            if (!Path.IsPathRooted(filePath))
             {
-                throw new ArgumentException($"The given .sm file path is either invalid or a file was not found. Path: {this.SmFileInfo.FullName}");
+                filePath = Path.GetFullPath(filePath);
             }
 
-            this.SongName = this.GetAttribute(SmFileAttribute.TITLE);
-            this.Group = this.SmFileInfo.Directory?.Parent?.Name ?? string.Empty;
-            this.BannerPath = this.GetAttribute(SmFileAttribute.BANNER);
-            if (Path.HasExtension(this.BannerPath) == false) this.BannerPath += ".png";
-            this.Artist = this.GetAttribute(SmFileAttribute.ARTIST);
+            if (File.Exists(filePath) == false || !filePath.ToLower().EndsWith(".sm"))
+            {
+                throw new ArgumentException($"The given .sm file path is either invalid or a file was not found. Path: {filePath}");
+            }
+
+            FilePath = filePath;
+
+            Group = Path.GetFullPath(Path.Combine(filePath, @"..\.."))
+                        .Split(Path.DirectorySeparatorChar)
+                        .Last();
+
+            Directory = Path.GetDirectoryName(filePath);
+
+            SongName = GetAttribute(SmFileAttribute.TITLE);
+            Artist = GetAttribute(SmFileAttribute.ARTIST);
+            BannerPath = GetAttribute(SmFileAttribute.BANNER);
+
+            if (Path.HasExtension(BannerPath) == false)
+            {
+                BannerPath += ".png";
+            }
         }
         
-        public ChartData ExtractChartData()
+        public ChartData ExtractChartData(bool extractAllStepData = true)
         {
             var stepCharts = new List<StepData>();
-            var fileContent = File.ReadLines(this.SmFileInfo.FullName).ToList();
+            var fileContent = File.ReadLines(FilePath).ToList();
 
             for (int i = 0; i < fileContent.Count; i++)
             {
@@ -62,24 +76,27 @@ namespace StepmaniaUtils.Core
 
                 while (fileContent[noteDataEndIndex].Contains(";") == false) noteDataEndIndex++;
 
-                var rawNoteData =
-                    fileContent.Skip(noteDataStartIndex)
-                        .Take(noteDataEndIndex - noteDataStartIndex)
-                        .ToList();
-
-                stepCharts.Add(new StepData(style, difficulty, rating, author, rawNoteData));
+                if (extractAllStepData)
+                {
+                    var rawNoteData = fileContent.Skip(noteDataStartIndex).Take(noteDataEndIndex - noteDataStartIndex).ToList();
+                    stepCharts.Add(new StepData(style, difficulty, rating, author, rawNoteData));
+                }
+                else
+                {
+                    stepCharts.Add(new StepData(style, difficulty, rating, author));
+                }
 
                 i = noteDataEndIndex;
             }
 
-            return new ChartData(stepCharts, this.SmFileInfo);
+            return new ChartData(stepCharts, FilePath);
         }
-
+        
         public string GetAttribute(SmFileAttribute attribute)
         {
             string attributeName = attribute.ToString();
 
-            var fileContent = File.ReadLines(this.SmFileInfo.FullName);
+            var fileContent = File.ReadLines(FilePath);
 
             string attributeLine = fileContent
                                     .TakeWhile(s => s.Contains("#NOTES:") == false)

@@ -11,11 +11,11 @@ namespace StepmaniaUtils.StepChart
 
         public MeasureData()
         {
-            this.Notes = new List<ColumnData>();
+            Notes = new List<ColumnData>();
         }
         public MeasureData(string measureData)
         {
-            this.Notes = this.ParseRawMeasureData(measureData);
+            Notes = ParseRawMeasureData(measureData);
         }
 
         private List<ColumnData> ParseRawMeasureData(string measureData)
@@ -30,7 +30,7 @@ namespace StepmaniaUtils.StepChart
 
         public void Dispose()
         {
-            this.Notes = null;
+            Notes = null;
         }
     }
 }

@@ -19,19 +19,18 @@ namespace StepmaniaUtils.StepChart
 
         public StepData(PlayStyle playStyle, SongDifficulty difficulty, int difficultyRating, string chartAuthor)
         {
-            this.PlayStyle = playStyle;
-            this.Difficulty = difficulty;
-            this.DifficultyRating = difficultyRating;
-            this.ChartAuthor = chartAuthor;
+            PlayStyle = playStyle;
+            Difficulty = difficulty;
+            DifficultyRating = difficultyRating;
+            ChartAuthor = chartAuthor;
 
-            this.Measures = new List<MeasureData>();
+            Measures = new List<MeasureData>();
         }
 
-        public StepData(PlayStyle playStyle, SongDifficulty difficulty, int difficultyRating, string chartAuthor,
-            List<string> rawChartData)
+        public StepData(PlayStyle playStyle, SongDifficulty difficulty, int difficultyRating, string chartAuthor, List<string> rawChartData)
             : this(playStyle, difficulty, difficultyRating, chartAuthor)
         {
-            this.Measures = this.ParseRawChartData(rawChartData);
+            Measures = ParseRawChartData(rawChartData);
         }
 
         private List<MeasureData> ParseRawChartData(List<string> rawChartData)
@@ -45,16 +44,16 @@ namespace StepmaniaUtils.StepChart
         {
             var rawData = new List<string>
             {
-                $"//---------------{this.PlayStyle.ToStyleName()}-----------------",
+                $"//---------------{PlayStyle.ToStyleName()}-----------------",
                 $"#NOTES:",
-                $"    {this.PlayStyle.ToStyleName()}:",
-                $"    {this.ChartAuthor}:",
-                $"    {this.Difficulty}:",
-                $"    {this.DifficultyRating}:",
+                $"    {PlayStyle.ToStyleName()}:",
+                $"    {ChartAuthor}:",
+                $"    {Difficulty}:",
+                $"    {DifficultyRating}:",
                 $"    0.000,0.000,0.000,0.000,0.000:"
             };
 
-            foreach (var measureData in this.Measures)
+            foreach (var measureData in Measures)
             {
                 foreach (var noteData in measureData.Notes)
                 {
@@ -71,12 +70,12 @@ namespace StepmaniaUtils.StepChart
 
         public void Dispose()
         {
-            foreach (var measureData in this.Measures)
+            foreach (var measureData in Measures)
             {
                 measureData.Dispose();
             }
 
-            this.Measures = null;
+            Measures = null;
         }
     }
 }

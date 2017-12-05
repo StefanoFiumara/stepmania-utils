@@ -9,27 +9,28 @@ namespace StepmaniaUtils.StepChart
     public class ChartData : IDisposable
     {
         private List<StepData> StepCharts { get; set; }
-        private FileInfo SmFile { get; }
-
-        private List<StepData> NewStepData { get; set; }
+        public string SmFilePath { get; }
+        
+        private List<StepData> NewStepData { get; }
         private bool IsDirty { get; set; }
 
-        public ChartData(List<StepData> stepCharts, FileInfo smFile)
+        public ChartData(List<StepData> stepCharts, string smFilePath)
         {
-            this.StepCharts = stepCharts;
-            this.SmFile = smFile;
-            this.NewStepData = new List<StepData>();
+            StepCharts = stepCharts;
+            SmFilePath = smFilePath;
+
+            NewStepData = new List<StepData>();
         }
 
         public StepData GetSteps(PlayStyle style, SongDifficulty difficulty)
         {
-            return this.StepCharts.FirstOrDefault(c => c.PlayStyle == style && c.Difficulty == difficulty);
+            return StepCharts.FirstOrDefault(c => c.PlayStyle == style && c.Difficulty == difficulty);
         }
 
         public SongDifficulty GetHighestChartedDifficulty(PlayStyle style)
         {
             return
-                this.StepCharts
+                StepCharts
                     .Where(c => c.PlayStyle == style)
                     .OrderByDescending(c => c.Difficulty)
                     .Select(d => d.Difficulty)
@@ -41,36 +42,36 @@ namespace StepmaniaUtils.StepChart
             if (chartData == null)
                 throw new ArgumentNullException(nameof(chartData), "Attempted to add null chart data.");
 
-            if (this.GetSteps(chartData.PlayStyle, chartData.Difficulty) != null)
+            if (GetSteps(chartData.PlayStyle, chartData.Difficulty) != null)
             {
                 string exMessage = $"This CharData already contains a stepchart for {chartData.PlayStyle}-{chartData.Difficulty}";
                 throw new InvalidOperationException(exMessage);
             }
 
-            this.StepCharts.Add(chartData);
-            this.NewStepData.Add(chartData);
-            this.IsDirty = true;
+            StepCharts.Add(chartData);
+            NewStepData.Add(chartData);
+            IsDirty = true;
 
            
         }
 
         public void Dispose()
         {
-            if (this.IsDirty)
+            if (IsDirty)
             {
-                var backupFilePath = this.SmFile.FullName + ".backup";
-                File.Copy(this.SmFile.FullName, backupFilePath, true);
+                var backupFilePath = SmFilePath + ".backup";
+                File.Copy(SmFilePath, backupFilePath, true);
 
-                var rawStepData = this.NewStepData.SelectMany(d => d.GetRawChartData());
-                File.AppendAllLines(this.SmFile.FullName, rawStepData);
+                var rawStepData = NewStepData.SelectMany(d => d.GetRawChartData());
+                File.AppendAllLines(SmFilePath, rawStepData);
             }
 
-            foreach (var stepChart in this.StepCharts)
+            foreach (var stepChart in StepCharts)
             {
                 stepChart.Dispose();
             }
 
-            this.StepCharts = null;
+            StepCharts = null;
         }
     }
 }
