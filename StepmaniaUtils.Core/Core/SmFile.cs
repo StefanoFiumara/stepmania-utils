@@ -19,7 +19,10 @@ namespace StepmaniaUtils.Core
         public string Group { get; }
         public string FilePath { get; }
 
-        private IReadOnlyDictionary<SmFileAttribute, string> Attributes { get; }
+        //TODO: Can maybe expose this as a ReadOnlyDictionary
+        private IDictionary<SmFileAttribute, string> Attributes { get; }
+
+
 
         public SmFile(string filePath)
         {
@@ -41,13 +44,12 @@ namespace StepmaniaUtils.Core
 
             Directory = Path.GetDirectoryName(filePath);
 
-            Attributes = ReadAttributes();
+            Attributes = new Dictionary<SmFileAttribute, string>();
+            ParseFile();
         }
 
-        private IReadOnlyDictionary<SmFileAttribute, string> ReadAttributes()
+        private void ParseFile()
         {
-            var attributes = new Dictionary<SmFileAttribute, string>();
-
             var tagBuffer = new StringBuilder();
             var valueBuffer = new StringBuilder();
 
@@ -59,27 +61,25 @@ namespace StepmaniaUtils.Core
                     if (reader.Peek() == ':')
                     {
                         //buffer contains tag in the format #TAG
-                        var tag = tagBuffer.ToString().SkipWhile(c => c != '#').AsString().Trim('#').ToAttribute();
+                        var tag = tagBuffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
                         
-                        if (tag != SmFileAttribute.UNDEFINED && tag != SmFileAttribute.NOTES)
+                        if (tag != SmFileAttribute.UNDEFINED)
                         {
-                            //Read the tag's value
-                            reader.Read(); //toss ':' token
-                            valueBuffer.Clear();
-                            while (reader.Peek() != ';')
+                            if (tag == SmFileAttribute.NOTES)
                             {
-                                valueBuffer.Append((char)reader.Read());
+                                //TODO: parse chart metadata
+                                //var stepData = ReadStepchartMetadata(reader, valueBuffer);
+                                //ChartMetadata.Add(stepData);
                             }
-
-                            var value = valueBuffer.ToString();
-
-                            attributes.Add(tag, value);
+                            else
+                            {
+                                var value = ReadTagValue(reader, valueBuffer);
+                                Attributes.Add(tag, value);
+                            }
+                            
                         }
 
                         tagBuffer.Clear();
-
-                        //TODO: parse notes section for chart metadata
-                        if (tag == SmFileAttribute.NOTES) break;
                     }
                     else
                     {
@@ -87,10 +87,24 @@ namespace StepmaniaUtils.Core
                     }
                 }
             }
-
-            return attributes;
         }
 
+        private static string ReadTagValue(StreamReader reader, StringBuilder buffer)
+        {
+            reader.Read(); //toss ':' token
+            buffer.Clear();
+            while (reader.Peek() != ';')
+            {
+                buffer.Append((char) reader.Read());
+            }
+
+            return buffer.ToString();
+        }
+
+        private static StepData ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
+        {
+            throw new NotImplementedException();
+        }
 
         public ChartData ExtractChartData(bool extractAllStepData = true)
         {
