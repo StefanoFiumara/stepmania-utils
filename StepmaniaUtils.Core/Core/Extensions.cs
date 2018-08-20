@@ -5,7 +5,7 @@ using System.Text;
 
 namespace StepmaniaUtils.Core
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static string AsString(this IEnumerable<char> sequence)
         {
