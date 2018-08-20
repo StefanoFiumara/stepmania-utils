@@ -45,7 +45,6 @@
     <Compile Include="Enums\EnumExtensions.cs" />
     <Compile Include="Enums\SmFileAttribute.cs" />
     <Compile Include="Enums\SongDifficulty.cs" />
-    <Compile Include="StepChart\ChartData.cs" />
     <Compile Include="StepChart\ChartMetadata.cs" />
     <Compile Include="StepChart\StepData.cs" />
     <Compile Include="Enums\PlayStyle.cs" />
