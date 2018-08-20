@@ -21,7 +21,7 @@ namespace StepmaniaUtils.Tests
         public void GetTitleAttribute()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            string value = smFile.GetAttribute(SmFileAttribute.TITLE);
+            string value = smFile[SmFileAttribute.TITLE];
 
             Assert.IsTrue(string.IsNullOrEmpty(value) == false);
         }
@@ -31,7 +31,7 @@ namespace StepmaniaUtils.Tests
         public void GetNonExistentAttribute()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            string value = smFile.GetAttribute(SmFileAttribute.TIMESIGNATURES);
+            string value = smFile[SmFileAttribute.TIMESIGNATURES];
 
             Assert.IsTrue(string.IsNullOrEmpty(value));
         }
@@ -41,7 +41,7 @@ namespace StepmaniaUtils.Tests
         public void GetCommonAttributes()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            Assert.AreEqual("BUTTERFLY", smFile.SongName);
+            Assert.AreEqual("BUTTERFLY", smFile.SongTitle);
             Assert.AreEqual("TestData", smFile.Group); //Group name is the name of the parent folder
             Assert.AreEqual("BUTTERFLY.png", smFile.BannerPath);
             Assert.AreEqual("SMILE.dk", smFile.Artist);

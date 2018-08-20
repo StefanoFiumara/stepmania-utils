@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,19 +11,22 @@ namespace StepmaniaUtils.Core
 {
     public class SmFile
     {
-        
-        public string SongName => Attributes.ContainsKey(SmFileAttribute.TITLE) ? Attributes[SmFileAttribute.TITLE] : string.Empty;
-        public string BannerPath => Attributes.ContainsKey(SmFileAttribute.BANNER) ? Attributes[SmFileAttribute.BANNER] : string.Empty;
-        public string Artist => Attributes.ContainsKey(SmFileAttribute.ARTIST) ? Attributes[SmFileAttribute.ARTIST] : string.Empty;
+        public string this[SmFileAttribute attribute] =>
+            Attributes.ContainsKey(attribute) ? Attributes[attribute] : string.Empty;
+
+        public string SongTitle => this[SmFileAttribute.TITLE];
+        public string BannerPath => this[SmFileAttribute.BANNER];
+        public string Artist => this[SmFileAttribute.ARTIST];
 
         public string Directory { get; }
         public string Group { get; }
         public string FilePath { get; }
 
-        //TODO: Can maybe expose this as a ReadOnlyDictionary
-        private IDictionary<SmFileAttribute, string> Attributes { get; }
-
-
+        public ChartMetadata ChartMetadata { get; }
+        
+        private readonly IDictionary<SmFileAttribute, string> _attributes;
+        public IReadOnlyDictionary<SmFileAttribute, string> Attributes => _attributes.AsReadOnly();
+        
 
         public SmFile(string filePath)
         {
@@ -44,7 +48,9 @@ namespace StepmaniaUtils.Core
 
             Directory = Path.GetDirectoryName(filePath);
 
-            Attributes = new Dictionary<SmFileAttribute, string>();
+            ChartMetadata = new ChartMetadata(FilePath);
+            _attributes = new Dictionary<SmFileAttribute, string>();
+
             ParseFile();
         }
 
@@ -67,16 +73,15 @@ namespace StepmaniaUtils.Core
                         {
                             if (tag == SmFileAttribute.NOTES)
                             {
-                                //TODO: parse chart metadata
-                                //var stepData = ReadStepchartMetadata(reader, valueBuffer);
-                                //ChartMetadata.Add(stepData);
+                                //Parse chart metadata
+                                var stepData = ReadStepchartMetadata(reader, valueBuffer);
+                                ChartMetadata.Add(stepData);
                             }
                             else
                             {
                                 var value = ReadTagValue(reader, valueBuffer);
-                                Attributes.Add(tag, value);
+                                _attributes.Add(tag, value);
                             }
-                            
                         }
 
                         tagBuffer.Clear();
@@ -101,9 +106,34 @@ namespace StepmaniaUtils.Core
             return buffer.ToString();
         }
 
-        private static StepData ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
+        private static StepMetadata ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
         {
-            throw new NotImplementedException();
+            reader.Read(); //toss ':' token
+
+            var stepData = new StepMetadata
+            {
+                PlayStyle = ReadNextNoteHeaderSection(reader, buffer).ToStyleEnum(),
+                ChartAuthor = ReadNextNoteHeaderSection(reader, buffer),
+                Difficulty = ReadNextNoteHeaderSection(reader, buffer).ToSongDifficultyEnum(),
+                DifficultyRating = (int) double.Parse(ReadNextNoteHeaderSection(reader, buffer))
+            };
+
+            //skip the stream reader ahead to the next tag
+            while (reader.Peek() != ';') reader.Read();
+
+            return stepData;
+        }
+
+        private static string ReadNextNoteHeaderSection(StreamReader reader, StringBuilder buffer)
+        {
+            buffer.Clear();
+            while (reader.Peek() != ':')
+            {
+                buffer.Append((char)reader.Read());
+            }
+            reader.Read(); //toss ':' token
+
+            return buffer.SkipWhile(char.IsWhiteSpace).ToString();
         }
 
         public ChartData ExtractChartData(bool extractAllStepData = true)
@@ -120,8 +150,8 @@ namespace StepmaniaUtils.Core
                 string difficultyLine = fileContent[i + 3];
                 int rating = (int)double.Parse(fileContent[i + 4].Trim().TrimEnd(':'));
 
-                PlayStyle style = EnumExtensions.ToStyleEnum(styleLine);
-                SongDifficulty difficulty = EnumExtensions.ToSongDifficultyEnum(difficultyLine);
+                PlayStyle style = styleLine.ToStyleEnum();
+                SongDifficulty difficulty = difficultyLine.ToSongDifficultyEnum();
 
                 int noteDataStartIndex = i + 6;
                 //Stupid Edge case
@@ -149,16 +179,6 @@ namespace StepmaniaUtils.Core
             }
 
             return new ChartData(stepCharts, FilePath);
-        }
-        
-        public string GetAttribute(SmFileAttribute attribute)
-        {
-            if (Attributes.ContainsKey(attribute))
-            {
-                return Attributes[attribute];
-            }
-
-            return string.Empty;
         }
     }
 }

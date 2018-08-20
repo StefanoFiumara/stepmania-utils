@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 
@@ -7,16 +8,9 @@ namespace StepmaniaUtils.Core
 {
     internal static class Extensions
     {
-        public static string AsString(this IEnumerable<char> sequence)
+        public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dict)
         {
-            var sb = new StringBuilder();
-
-            foreach (var c in sequence)
-            {
-                sb.Append(c);
-            }
-
-            return sb.ToString();
+            return new ReadOnlyDictionary<TKey, TValue>(dict);
         }
 
         public static StringBuilder SkipWhile(this StringBuilder sb, Func<char, bool> condition)

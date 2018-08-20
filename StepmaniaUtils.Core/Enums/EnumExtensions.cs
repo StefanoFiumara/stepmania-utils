@@ -35,7 +35,7 @@ namespace StepmaniaUtils.Enums
             }
         }
 
-        public static PlayStyle ToStyleEnum(string styleName)
+        public static PlayStyle ToStyleEnum(this string styleName)
         {
             styleName = styleName.Trim().TrimEnd(':');
             switch (styleName)
@@ -55,7 +55,7 @@ namespace StepmaniaUtils.Enums
             }
         }
 
-        public static SongDifficulty ToSongDifficultyEnum(string difficultyName)
+        public static SongDifficulty ToSongDifficultyEnum(this string difficultyName)
         {
             return
                 Enum.GetValues(typeof(SongDifficulty))
