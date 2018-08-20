@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepChart;
 
@@ -9,13 +10,16 @@ namespace StepmaniaUtils.Core
 {
     public class SmFile
     {
-        public string SongName { get; set; }
-        public string Group { get; set; }
-        public string BannerPath { get; set; }
-        public string Artist { get; set; }
-        public string Directory { get; set; }
         
+        public string SongName => Attributes.ContainsKey(SmFileAttribute.TITLE) ? Attributes[SmFileAttribute.TITLE] : string.Empty;
+        public string BannerPath => Attributes.ContainsKey(SmFileAttribute.BANNER) ? Attributes[SmFileAttribute.BANNER] : string.Empty;
+        public string Artist => Attributes.ContainsKey(SmFileAttribute.ARTIST) ? Attributes[SmFileAttribute.ARTIST] : string.Empty;
+
+        public string Directory { get; }
+        public string Group { get; }
         public string FilePath { get; }
+
+        private IReadOnlyDictionary<SmFileAttribute, string> Attributes { get; }
 
         public SmFile(string filePath)
         {
@@ -37,16 +41,57 @@ namespace StepmaniaUtils.Core
 
             Directory = Path.GetDirectoryName(filePath);
 
-            SongName = GetAttribute(SmFileAttribute.TITLE);
-            Artist = GetAttribute(SmFileAttribute.ARTIST);
-            BannerPath = GetAttribute(SmFileAttribute.BANNER);
-
-            if (Path.HasExtension(BannerPath) == false)
-            {
-                BannerPath += ".png";
-            }
+            Attributes = ReadAttributes();
         }
-        
+
+        private IReadOnlyDictionary<SmFileAttribute, string> ReadAttributes()
+        {
+            var attributes = new Dictionary<SmFileAttribute, string>();
+
+            var tagBuffer = new StringBuilder();
+            var valueBuffer = new StringBuilder();
+
+            using (var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read))
+            using (var reader = new StreamReader(stream))
+            {
+                while (!reader.EndOfStream)
+                {
+                    if (reader.Peek() == ':')
+                    {
+                        //buffer contains tag in the format #TAG
+                        var tag = tagBuffer.ToString().SkipWhile(c => c != '#').AsString().Trim('#').ToAttribute();
+                        
+                        if (tag != SmFileAttribute.UNDEFINED && tag != SmFileAttribute.NOTES)
+                        {
+                            //Read the tag's value
+                            reader.Read(); //toss ':' token
+                            valueBuffer.Clear();
+                            while (reader.Peek() != ';')
+                            {
+                                valueBuffer.Append((char)reader.Read());
+                            }
+
+                            var value = valueBuffer.ToString();
+
+                            attributes.Add(tag, value);
+                        }
+
+                        tagBuffer.Clear();
+
+                        //TODO: parse notes section for chart metadata
+                        if (tag == SmFileAttribute.NOTES) break;
+                    }
+                    else
+                    {
+                        tagBuffer.Append((char)reader.Read());
+                    }
+                }
+            }
+
+            return attributes;
+        }
+
+
         public ChartData ExtractChartData(bool extractAllStepData = true)
         {
             var stepCharts = new List<StepData>();
@@ -94,19 +139,9 @@ namespace StepmaniaUtils.Core
         
         public string GetAttribute(SmFileAttribute attribute)
         {
-            string attributeName = attribute.ToString();
-
-            var fileContent = File.ReadLines(FilePath);
-
-            string attributeLine = fileContent
-                                    .TakeWhile(s => s.Contains("#NOTES:") == false)
-                                    .FirstOrDefault(line => line.Contains($"#{attributeName}:"));
-
-            if (attributeLine != null)
+            if (Attributes.ContainsKey(attribute))
             {
-                return attributeLine
-                    .Replace($"#{attributeName}:", string.Empty)
-                    .TrimEnd(';');
+                return Attributes[attribute];
             }
 
             return string.Empty;

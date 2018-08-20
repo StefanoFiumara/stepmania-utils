@@ -1,57 +1,20 @@
-﻿// ReSharper disable InconsistentNaming
-
-using System;
+﻿using System;
 using System.Linq;
 
 namespace StepmaniaUtils.Enums
 {
-    public enum SmFileAttribute
-    {
-        TITLE,
-        SUBTITLE,
-        ARTIST,
-        TITLETRANSLIT,
-        SUBTITLETRANSLIT,
-        ARTISTTRANSLIT,
-        GENRE,
-        CREDIT,
-        BANNER,
-        BACKGROUND,
-        LYRICSPATH,
-        CDTITLE,
-        MUSIC,
-        OFFSET,
-        SAMPLESTART,
-        SAMPLELENGTH,
-        SELECTABLE,
-        BPMS,
-        STOPS,
-        TIMESIGNATURES,
-        BGCHANGES,
-        KEYSOUNDS,
-    }
-
-    public enum SongDifficulty
-    {
-        Beginner,
-        Easy,
-        Medium,
-        Hard,
-        Challenge
-    }
-
-    public enum PlayStyle
-    {
-        Undefined,
-        Single,
-        Double,
-        Couple,
-        Solo,
-        Lights
-    }
-
     public static class EnumExtensions
     {
+        public static SmFileAttribute ToAttribute(this string attr)
+        {
+            if (Enum.TryParse(attr, true, out SmFileAttribute result))
+            {
+                return result;
+            }
+
+            return SmFileAttribute.UNDEFINED;
+        }
+
         public static string ToStyleName(this PlayStyle style)
         {
             switch (style)
