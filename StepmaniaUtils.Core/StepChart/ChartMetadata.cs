@@ -9,7 +9,7 @@ namespace StepmaniaUtils.StepChart
         private readonly string _filePath;
         private readonly List<StepMetadata> _stepCharts;
 
-        private IReadOnlyList<StepMetadata> StepCharts => _stepCharts.AsReadOnly();
+        public IReadOnlyList<StepMetadata> StepCharts => _stepCharts.AsReadOnly();
 
         public ChartMetadata(string filePath)
         {
@@ -21,10 +21,10 @@ namespace StepmaniaUtils.StepChart
         {
             _stepCharts.Add(stepData);
         }
-
+        
         public StepMetadata GetSteps(PlayStyle style, SongDifficulty difficulty)
         {
-            return StepCharts.FirstOrDefault(c => c.PlayStyle == style && c.Difficulty == difficulty);
+            return StepCharts.SingleOrDefault(c => c.PlayStyle == style && c.Difficulty == difficulty);
         }
 
         public SongDifficulty GetHighestChartedDifficulty(PlayStyle style)

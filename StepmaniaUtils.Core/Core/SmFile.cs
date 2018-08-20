@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,9 +21,9 @@ namespace StepmaniaUtils.Core
         public string Group { get; }
         public string FilePath { get; }
 
-        public ChartMetadata ChartMetadata { get; }
+        public ChartMetadata ChartMetadata { get; private set; }
         
-        private readonly IDictionary<SmFileAttribute, string> _attributes;
+        private IDictionary<SmFileAttribute, string> _attributes;
         public IReadOnlyDictionary<SmFileAttribute, string> Attributes => _attributes.AsReadOnly();
         
 
@@ -54,8 +53,17 @@ namespace StepmaniaUtils.Core
             ParseFile();
         }
 
+        public void Refresh()
+        {
+            ChartMetadata = new ChartMetadata(FilePath);
+            _attributes = new Dictionary<SmFileAttribute, string>();
+
+            ParseFile();
+        }
+
         private void ParseFile()
         {
+            //TODO: Try to do it with just one buffer, likely all that's needed.
             var tagBuffer = new StringBuilder();
             var valueBuffer = new StringBuilder();
 
@@ -76,6 +84,9 @@ namespace StepmaniaUtils.Core
                                 //Parse chart metadata
                                 var stepData = ReadStepchartMetadata(reader, valueBuffer);
                                 ChartMetadata.Add(stepData);
+
+                                //skip the stream reader ahead to the next tag
+                                while (reader.Peek() != ';') reader.Read();
                             }
                             else
                             {
@@ -94,7 +105,7 @@ namespace StepmaniaUtils.Core
             }
         }
 
-        private static string ReadTagValue(StreamReader reader, StringBuilder buffer)
+        internal static string ReadTagValue(StreamReader reader, StringBuilder buffer)
         {
             reader.Read(); //toss ':' token
             buffer.Clear();
@@ -106,7 +117,7 @@ namespace StepmaniaUtils.Core
             return buffer.ToString();
         }
 
-        private static StepMetadata ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
+        internal static StepMetadata ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
         {
             reader.Read(); //toss ':' token
 
@@ -117,14 +128,11 @@ namespace StepmaniaUtils.Core
                 Difficulty = ReadNextNoteHeaderSection(reader, buffer).ToSongDifficultyEnum(),
                 DifficultyRating = (int) double.Parse(ReadNextNoteHeaderSection(reader, buffer))
             };
-
-            //skip the stream reader ahead to the next tag
-            while (reader.Peek() != ';') reader.Read();
-
+            
             return stepData;
         }
 
-        private static string ReadNextNoteHeaderSection(StreamReader reader, StringBuilder buffer)
+        internal static string ReadNextNoteHeaderSection(StreamReader reader, StringBuilder buffer)
         {
             buffer.Clear();
             while (reader.Peek() != ':')
@@ -134,51 +142,6 @@ namespace StepmaniaUtils.Core
             reader.Read(); //toss ':' token
 
             return buffer.SkipWhile(char.IsWhiteSpace).ToString();
-        }
-
-        public ChartData ExtractChartData(bool extractAllStepData = true)
-        {
-            var stepCharts = new List<StepData>();
-            var fileContent = File.ReadLines(FilePath).ToList();
-
-            for (int i = 0; i < fileContent.Count; i++)
-            {
-                if (!fileContent[i].Contains("#NOTES:")) continue;
-
-                string styleLine = fileContent[i + 1];
-                string author = fileContent[i + 2].Trim().TrimEnd(':');
-                string difficultyLine = fileContent[i + 3];
-                int rating = (int)double.Parse(fileContent[i + 4].Trim().TrimEnd(':'));
-
-                PlayStyle style = styleLine.ToStyleEnum();
-                SongDifficulty difficulty = difficultyLine.ToSongDifficultyEnum();
-
-                int noteDataStartIndex = i + 6;
-                //Stupid Edge case
-                if (fileContent[i + 5].Trim().EndsWith(":") == false)
-                {
-                    var nextLine = string.Concat(fileContent[i + 5].Trim().SkipWhile(c => c != ':').Skip(1));
-                    fileContent.Insert(i + 6, nextLine);
-                }
-
-                int noteDataEndIndex = noteDataStartIndex;
-
-                while (fileContent[noteDataEndIndex].Contains(";") == false) noteDataEndIndex++;
-
-                if (extractAllStepData)
-                {
-                    var rawNoteData = fileContent.Skip(noteDataStartIndex).Take(noteDataEndIndex - noteDataStartIndex).ToList();
-                    stepCharts.Add(new StepData(style, difficulty, rating, author, rawNoteData));
-                }
-                else
-                {
-                    stepCharts.Add(new StepData(style, difficulty, rating, author));
-                }
-
-                i = noteDataEndIndex;
-            }
-
-            return new ChartData(stepCharts, FilePath);
         }
     }
 }

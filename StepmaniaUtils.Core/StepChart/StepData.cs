@@ -27,19 +27,6 @@ namespace StepmaniaUtils.StepChart
             Measures = new List<MeasureData>();
         }
 
-        public StepData(PlayStyle playStyle, SongDifficulty difficulty, int difficultyRating, string chartAuthor, List<string> rawChartData)
-            : this(playStyle, difficulty, difficultyRating, chartAuthor)
-        {
-            Measures = ParseRawChartData(rawChartData);
-        }
-
-        private List<MeasureData> ParseRawChartData(List<string> rawChartData)
-        {
-            var rawMeasures = string.Join("\n", rawChartData).Split(',');
-
-            return rawMeasures.Select(data => new MeasureData(data)).ToList();
-        }
-
         public List<string> GetRawChartData()
         {
             var rawData = new List<string>

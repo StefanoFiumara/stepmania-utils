@@ -51,12 +51,9 @@ namespace StepmaniaUtils.Tests
         public void GetHighestDifficulty()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            using (var data = smFile.ExtractChartData())
-            {
-                var songDifficulty = data.GetHighestChartedDifficulty(PlayStyle.Single);
+            var songDifficulty = smFile.ChartMetadata.GetHighestChartedDifficulty(PlayStyle.Single);
 
-                Assert.IsTrue(songDifficulty == SongDifficulty.Challenge);
-            }
+            Assert.IsTrue(songDifficulty == SongDifficulty.Challenge);
         }
 
         [TestMethod]
@@ -64,81 +61,49 @@ namespace StepmaniaUtils.Tests
         public void GetChartData()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            using (var data = smFile.ExtractChartData())
-            {
-                var stepData = data.GetSteps(PlayStyle.Single, SongDifficulty.Challenge);
-                Assert.IsTrue(stepData.Measures.All(m => m.Notes.Count % 4 == 0));
-            }
+            Assert.IsTrue(smFile.ChartMetadata.StepCharts.Count > 0);
         }
+
+        //TODO: Tests to verify correct stepchart metadata
 
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
         public void GenerateLightsChart()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            using (var data = smFile.ExtractChartData())
-            {
-                var reference = data.GetSteps(PlayStyle.Single, SongDifficulty.Challenge);
-                var lightsData = StepChartBuilder.GenerateLightsChart(reference);
+            var lightsData = StepChartBuilder.GenerateLightsChart(smFile);
 
-                Assert.IsTrue(lightsData != null);
-            }
+            Assert.IsTrue(lightsData);
         }
 
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
         public void GenerateLightsChart_Doubles()
         {
+            //TODO: introduce a different stepchart with only doubles charts for this test
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            using (var data = smFile.ExtractChartData())
-            {
-                var reference = data.GetSteps(PlayStyle.Double, SongDifficulty.Challenge);
-                var lightsData = StepChartBuilder.GenerateLightsChart(reference);
+            
+            var lightsData = StepChartBuilder.GenerateLightsChart(smFile);
 
-                Assert.IsTrue(lightsData != null);
-            }
+            Assert.IsTrue(lightsData);
         }
-
-        [TestMethod, ExpectedException(typeof(ArgumentNullException))]
-        [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GenerateLightsChart_NoReference()
-        {
-            var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            using (var data = smFile.ExtractChartData())
-            {
-                var reference = data.GetSteps(PlayStyle.Undefined, SongDifficulty.Challenge);
-                StepChartBuilder.GenerateLightsChart(reference);
-            }
-        }
-
+        
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
         public void SaveChartData()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
 
-            bool hasLightsDataBeforeSave;
-            bool hasLightsDataAfterSave;
+            bool hasLightsBeforeSave = smFile.ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
+            var success = StepChartBuilder.GenerateLightsChart(smFile);
 
-            using (var data = smFile.ExtractChartData())
-            {
-                hasLightsDataBeforeSave = data.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
+            var newSmFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
 
-                var reference = data.GetSteps(PlayStyle.Single, SongDifficulty.Hard);
-                var lightsData = StepChartBuilder.GenerateLightsChart(reference);
+            bool hasLightsAfterSave = newSmFile.ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
 
-                data.AddNewStepchart(lightsData);
-            }
-
-            var newSmFileReference = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-
-            using (var data = newSmFileReference.ExtractChartData())
-            {
-                hasLightsDataAfterSave = data.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
-            }
-
-            Assert.IsFalse(hasLightsDataBeforeSave);
-            Assert.IsTrue(hasLightsDataAfterSave);
+            Assert.IsTrue(success);
+            Assert.IsFalse(hasLightsBeforeSave);
+            Assert.IsTrue(hasLightsAfterSave);
         }
     }
 }

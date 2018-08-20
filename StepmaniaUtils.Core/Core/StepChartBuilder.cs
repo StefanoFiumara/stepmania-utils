@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepChart;
 
@@ -7,6 +9,75 @@ namespace StepmaniaUtils.Core
 {
     public static class StepChartBuilder
     {
+        public static bool GenerateLightsChart(SmFile file)
+        {
+            var reference = file.ChartMetadata.GetSteps(PlayStyle.Single, SongDifficulty.Hard)
+                         ?? file.ChartMetadata.GetSteps(PlayStyle.Single, SongDifficulty.Challenge)
+                         ?? file.ChartMetadata.GetSteps(PlayStyle.Double, SongDifficulty.Hard)
+                         ?? file.ChartMetadata.GetSteps(PlayStyle.Double, SongDifficulty.Challenge)
+                         ?? file.ChartMetadata.GetSteps(PlayStyle.Single, file.ChartMetadata.GetHighestChartedDifficulty(PlayStyle.Single))
+                         ?? file.ChartMetadata.GetSteps(PlayStyle.Double, file.ChartMetadata.GetHighestChartedDifficulty(PlayStyle.Double));
+
+            if (reference == null)
+                throw new ArgumentException("Could not find a reference chart.", nameof(file));
+
+            var rawChartData = GetRawChartData(file.FilePath, reference);
+
+            return true;
+        }
+
+        private static string GetRawChartData(string file, StepMetadata steps)
+        {
+            //TODO: Try to do it with just one buffer, likely all that's needed.
+            var tagBuffer = new StringBuilder();
+            var valueBuffer = new StringBuilder();
+            var dataBuffer = new StringBuilder();
+
+            using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read))
+            using (var reader = new StreamReader(stream))
+            {
+                while (!reader.EndOfStream)
+                {
+                    if (reader.Peek() == ':')
+                    {
+                        //buffer contains tag in the format #TAG
+                        var tag = tagBuffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
+                        
+                        if (tag == SmFileAttribute.NOTES)
+                        {
+                            var stepData = SmFile.ReadStepchartMetadata(reader, valueBuffer);
+                            if (stepData.PlayStyle == steps.PlayStyle && stepData.Difficulty == steps.Difficulty)
+                            {
+                                //Skip groove radar values
+                                SmFile.ReadNextNoteHeaderSection(reader, valueBuffer);
+
+                                while (reader.Peek() != ';') dataBuffer.Append((char) reader.Read());
+
+                                return dataBuffer.ToString();
+                            }
+
+                            //wrong chart, skip the stream reader ahead to the next tag
+                            while (reader.Peek() != ';') reader.Read();
+                        }
+                        else
+                        {
+                            //skip
+                            while (reader.Peek() != ';') reader.Read();
+                        }
+
+                        tagBuffer.Clear();
+
+                    }
+                    else
+                    {
+                        tagBuffer.Append((char)reader.Read());
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
         public static StepData GenerateLightsChart(StepData referenceChart)
         {
             if (referenceChart == null)
