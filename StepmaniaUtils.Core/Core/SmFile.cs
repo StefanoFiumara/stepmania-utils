@@ -89,7 +89,16 @@ namespace StepmaniaUtils.Core
                             else
                             {
                                 var value = ReadTagValue(reader, buffer);
-                                _attributes.Add(tag, value);
+
+                                if (!_attributes.ContainsKey(tag))
+                                {
+                                    _attributes.Add(tag, value);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Attempting to add duplicate header tag for song: {FilePath}");
+                                    Console.WriteLine($"Duplicate Tag: {tag}");
+                                }
                             }
                         }
                         else

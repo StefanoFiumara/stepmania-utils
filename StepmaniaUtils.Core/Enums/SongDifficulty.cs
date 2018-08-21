@@ -6,6 +6,7 @@
         Easy,
         Medium,
         Hard,
-        Challenge
+        Challenge,
+        Edit
     }
 }
