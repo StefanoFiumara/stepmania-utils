@@ -25,6 +25,7 @@ namespace StepmaniaUtils.Enums
         STOPS,
         TIMESIGNATURES,
         BGCHANGES,
+        FGCHANGES,
         KEYSOUNDS,
         DISPLAYBPM,
         NOTES

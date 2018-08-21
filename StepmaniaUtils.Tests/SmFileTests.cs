@@ -103,5 +103,16 @@ namespace StepmaniaUtils.Tests
             Assert.IsFalse(hasLightsBeforeSave);
             Assert.IsTrue(hasLightsAfterSave, "SM file did not have lights chart after save");
         }
+
+        [TestMethod]
+        [DeploymentItem("TestData/Cupcake/BadTag.sm", "TestData/Cupcake/")]
+        public void TestInfiniteLoopCupcakeTimingBug()
+        {
+            var smFile = new SmFile("TestData/Cupcake/BadTag.sm");
+            Assert.AreEqual("Watch Out! Swing Up!", smFile.SongTitle);
+            Assert.AreEqual("TestData", smFile.Group); //Group name is the name of the parent folder
+            Assert.AreEqual("../Cupcake Timing Festival v2-bn.png", smFile.BannerPath);
+            Assert.AreEqual("FAKE TYPE.", smFile.Artist);
+        }
     }
 }

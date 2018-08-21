@@ -53,6 +53,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TestData\Cupcake\BadTag.sm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="TestData\DDR1stMix\BUTTERFLY.sm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

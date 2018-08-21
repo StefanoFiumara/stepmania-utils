@@ -74,7 +74,7 @@ namespace StepmaniaUtils.Core
                     {
                         //buffer contains tag in the format #TAG
                         var tag = buffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
-                        
+
                         if (tag != SmFileAttribute.UNDEFINED)
                         {
                             if (tag == SmFileAttribute.NOTES)
@@ -91,6 +91,11 @@ namespace StepmaniaUtils.Core
                                 var value = ReadTagValue(reader, buffer);
                                 _attributes.Add(tag, value);
                             }
+                        }
+                        else
+                        {
+                            //could not read tag, toss the ':' token and continue
+                            reader.Read();
                         }
 
                         buffer.Clear();
