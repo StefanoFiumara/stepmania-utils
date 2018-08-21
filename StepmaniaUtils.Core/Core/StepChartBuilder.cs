@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using StepmaniaUtils.Enums;
-using StepmaniaUtils.StepChart;
+using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils.Core
 {
     public static class StepChartBuilder
     {
-        public static bool GenerateLightsChart(SmFile file)
+        public static LightsChart GenerateLightsChart(SmFile file)
         {
             var reference = file.ChartMetadata.GetSteps(PlayStyle.Single, SongDifficulty.Hard)
                          ?? file.ChartMetadata.GetSteps(PlayStyle.Single, SongDifficulty.Challenge)
@@ -21,18 +22,15 @@ namespace StepmaniaUtils.Core
             if (reference == null)
                 throw new ArgumentException("Could not find a reference chart.", nameof(file));
 
-            var rawChartData = GetRawChartData(file.FilePath, reference);
-
-            return true;
+            var lightsData = GenerateLightsChart(file.FilePath, reference);
+            
+            return new LightsChart(lightsData);
         }
 
-        private static string GetRawChartData(string file, StepMetadata steps)
+        private static string GenerateLightsChart(string file, StepMetadata referenceData)
         {
-            //TODO: Try to do it with just one buffer, likely all that's needed.
-            var tagBuffer = new StringBuilder();
-            var valueBuffer = new StringBuilder();
-            var dataBuffer = new StringBuilder();
-
+            var buffer = new StringBuilder();
+            
             using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read))
             using (var reader = new StreamReader(stream))
             {
@@ -41,70 +39,79 @@ namespace StepmaniaUtils.Core
                     if (reader.Peek() == ':')
                     {
                         //buffer contains tag in the format #TAG
-                        var tag = tagBuffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
+                        var tag = buffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
                         
                         if (tag == SmFileAttribute.NOTES)
                         {
-                            var stepData = SmFile.ReadStepchartMetadata(reader, valueBuffer);
-                            if (stepData.PlayStyle == steps.PlayStyle && stepData.Difficulty == steps.Difficulty)
+                            var stepData = SmFile.ReadStepchartMetadata(reader, buffer);
+                            if (stepData.PlayStyle == referenceData.PlayStyle && stepData.Difficulty == referenceData.Difficulty)
                             {
                                 //Skip groove radar values
-                                SmFile.ReadNextNoteHeaderSection(reader, valueBuffer);
+                                SmFile.ReadNextNoteHeaderSection(reader, buffer);
 
-                                while (reader.Peek() != ';') dataBuffer.Append((char) reader.Read());
+                                buffer.Clear();
 
-                                return dataBuffer.ToString();
+                                return GenerateLightsChart(reader, buffer);
                             }
-
                             //wrong chart, skip the stream reader ahead to the next tag
                             while (reader.Peek() != ';') reader.Read();
                         }
                         else
-                        {
-                            //skip
+                        {   //skip
                             while (reader.Peek() != ';') reader.Read();
                         }
 
-                        tagBuffer.Clear();
+                        buffer.Clear();
 
                     }
                     else
                     {
-                        tagBuffer.Append((char)reader.Read());
+                        buffer.Append((char)reader.Read());
                     }
                 }
             }
 
-            return string.Empty;
+            throw new Exception($"Could not find note data to reference in {file}");
         }
 
-        public static StepData GenerateLightsChart(StepData referenceChart)
+        private static string GenerateLightsChart(StreamReader reader, StringBuilder buffer)
         {
-            if (referenceChart == null)
-                throw new ArgumentNullException(nameof(referenceChart), "referenceChart cannot be null.");
-
-            if (!referenceChart.Measures.Any())
-            {
-                throw new ArgumentException("Reference chart does not contain Measure Data", nameof(referenceChart));
-            }
-
-            var lightChart = new StepData(PlayStyle.Lights, SongDifficulty.Easy, difficultyRating: 1, chartAuthor: "Auto-Generated");
+            var result = new StringBuilder()
+                  .AppendLine($"//---------------lights-cabinet-----------------")
+                  .AppendLine($"#NOTES:")
+                  .AppendLine($"    lights-cabinet:")
+                  .AppendLine($"    auto-generated:")
+                  .AppendLine($"    Easy:")
+                  .AppendLine($"    1:")
+                  .AppendLine($"    0.000,0.000,0.000,0.000,0.000:");
+            
+            var measureData = new List<string>(192);
 
             bool isHolding = false;
-            foreach (var referenceMeasure in referenceChart.Measures)
+
+            while (reader.Peek() != ';')
             {
-                int quarterNoteBeatIndicator = referenceMeasure.Notes.Count / 4;
+                buffer.Clear();
+                measureData.Clear();
+
+                while (reader.Peek() != ',' && reader.Peek() != ';') buffer.Append((char) reader.Read());
+
+                var measureLines = buffer.ToString().Split(Environment.NewLine.ToCharArray())
+                                                    .Select(data => data.Trim())
+                                                    .Where(data => !data.Contains(@"//"))
+                                                    .Where(data => !string.IsNullOrWhiteSpace(data));
+
+                measureData.AddRange(measureLines);
+
+                int quarterNoteBeatIndicator = measureData.Count / 4;
                 int noteIndex = 0;
 
-                var newMeasure = new MeasureData();
-
-                foreach (var note in referenceMeasure.Notes)
+                foreach (string note in measureData)
                 {
-                    string marqueeLights = note.Columns.Replace('M', '0'); //ignore mines
-
-                    if (referenceChart.PlayStyle == PlayStyle.Double)
+                    string marqueeLights = note.Replace('M', '0'); //ignore mines
+                    if (note.Length > 4)
                     {
-                        marqueeLights = MapMarqueeLightsForDoubles(marqueeLights);
+                        marqueeLights = MapDoubles(marqueeLights);
                     }
 
                     bool isQuarterBeat = noteIndex % quarterNoteBeatIndicator == 0;
@@ -114,7 +121,7 @@ namespace StepmaniaUtils.Core
                     bool isJump = marqueeLights.Count(c => c != '0') >= 2;
 
                     string bassLights = (hasNote && isQuarterBeat) || isJump ? "11" : "00";
-
+                    
                     if (isHoldBegin && !isHolding)
                     {
                         bassLights = "22"; //hold start
@@ -131,21 +138,28 @@ namespace StepmaniaUtils.Core
                         isHolding = false;
                     }
 
-                    var noteData = new ColumnData($"{marqueeLights}{bassLights}00");
-
-                    newMeasure.Notes.Add(noteData);
+                    result.AppendLine($"{marqueeLights}{bassLights}00");
                     noteIndex++;
                 }
 
-                lightChart.Measures.Add(newMeasure);
+                if (reader.Peek() == ';')
+                {
+                    result.AppendLine(";");
+                }
+                else
+                {
+                    result.AppendLine(",");
+                    reader.Read(); //consume delimiter.
+                }
             }
 
-            return lightChart;
+            return result.ToString();
         }
-
-        private static string MapMarqueeLightsForDoubles(string marqueeLights)
+        
+        private static string MapDoubles(string marqueeLights)
         {
-            string convertedMarqueeLights = string.Empty;
+            var sb = new StringBuilder();
+
             for (int i = 0; i < 4; i++)
             {
                 char note = '0';
@@ -156,10 +170,10 @@ namespace StepmaniaUtils.Core
                 if (marqueeLights[p1] != '0') note = marqueeLights[p1];
                 if (marqueeLights[p2] != '0') note = marqueeLights[p2];
 
-                convertedMarqueeLights += note;
+                sb.Append(note);
             }
 
-            return convertedMarqueeLights;
+            return sb.ToString();
         }
     }
 }

@@ -56,6 +56,9 @@
     <None Include="TestData\DDR1stMix\BUTTERFLY.sm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="TestData\Doubles\ArabianNights.sm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\StepmaniaUtils.Core\StepmaniaUtils.Core.csproj">

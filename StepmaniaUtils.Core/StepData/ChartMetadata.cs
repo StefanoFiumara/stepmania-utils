@@ -2,18 +2,16 @@
 using System.Linq;
 using StepmaniaUtils.Enums;
 
-namespace StepmaniaUtils.StepChart
+namespace StepmaniaUtils.StepData
 {
     public class ChartMetadata
     {
-        private readonly string _filePath;
         private readonly List<StepMetadata> _stepCharts;
 
         public IReadOnlyList<StepMetadata> StepCharts => _stepCharts.AsReadOnly();
 
-        public ChartMetadata(string filePath)
+        public ChartMetadata()
         {
-            _filePath = filePath;
             _stepCharts = new List<StepMetadata>();
         }
 

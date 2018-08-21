@@ -63,9 +63,7 @@ namespace StepmaniaUtils.Tests
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             Assert.IsTrue(smFile.ChartMetadata.StepCharts.Count > 0);
         }
-
-        //TODO: Tests to verify correct stepchart metadata
-
+        
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
         public void GenerateLightsChart()
@@ -73,19 +71,18 @@ namespace StepmaniaUtils.Tests
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             var lightsData = StepChartBuilder.GenerateLightsChart(smFile);
 
-            Assert.IsTrue(lightsData);
+            Assert.IsTrue(!string.IsNullOrEmpty(lightsData.Content));
         }
 
         [TestMethod]
-        [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
+        [DeploymentItem("TestData/Doubles/ArabianNights.sm", "TestData/Doubles/")]
         public void GenerateLightsChart_Doubles()
         {
-            //TODO: introduce a different stepchart with only doubles charts for this test
-            var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
+            var smFile = new SmFile("TestData/Doubles/ArabianNights.sm");
             
             var lightsData = StepChartBuilder.GenerateLightsChart(smFile);
 
-            Assert.IsTrue(lightsData);
+            Assert.IsTrue(!string.IsNullOrEmpty(lightsData.Content));
         }
         
         [TestMethod]
@@ -95,15 +92,16 @@ namespace StepmaniaUtils.Tests
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
 
             bool hasLightsBeforeSave = smFile.ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
-            var success = StepChartBuilder.GenerateLightsChart(smFile);
 
-            var newSmFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
+            var chart = StepChartBuilder.GenerateLightsChart(smFile);
 
-            bool hasLightsAfterSave = newSmFile.ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
+            smFile.AddLightsChart(chart);
+            smFile.Refresh();
 
-            Assert.IsTrue(success);
+            bool hasLightsAfterSave = smFile.ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
+            
             Assert.IsFalse(hasLightsBeforeSave);
-            Assert.IsTrue(hasLightsAfterSave);
+            Assert.IsTrue(hasLightsAfterSave, "SM file did not have lights chart after save");
         }
     }
 }

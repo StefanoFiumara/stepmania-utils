@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using StepmaniaUtils.Enums;
-using StepmaniaUtils.StepChart;
+using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils.Core
 {
@@ -47,7 +47,7 @@ namespace StepmaniaUtils.Core
 
             Directory = Path.GetDirectoryName(filePath);
 
-            ChartMetadata = new ChartMetadata(FilePath);
+            ChartMetadata = new ChartMetadata();
             _attributes = new Dictionary<SmFileAttribute, string>();
 
             ParseFile();
@@ -55,7 +55,7 @@ namespace StepmaniaUtils.Core
 
         public void Refresh()
         {
-            ChartMetadata = new ChartMetadata(FilePath);
+            ChartMetadata = new ChartMetadata();
             _attributes = new Dictionary<SmFileAttribute, string>();
 
             ParseFile();
@@ -63,10 +63,8 @@ namespace StepmaniaUtils.Core
 
         private void ParseFile()
         {
-            //TODO: Try to do it with just one buffer, likely all that's needed.
-            var tagBuffer = new StringBuilder();
-            var valueBuffer = new StringBuilder();
-
+            var buffer = new StringBuilder();
+        
             using (var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read))
             using (var reader = new StreamReader(stream))
             {
@@ -75,14 +73,14 @@ namespace StepmaniaUtils.Core
                     if (reader.Peek() == ':')
                     {
                         //buffer contains tag in the format #TAG
-                        var tag = tagBuffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
+                        var tag = buffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
                         
                         if (tag != SmFileAttribute.UNDEFINED)
                         {
                             if (tag == SmFileAttribute.NOTES)
                             {
                                 //Parse chart metadata
-                                var stepData = ReadStepchartMetadata(reader, valueBuffer);
+                                var stepData = ReadStepchartMetadata(reader, buffer);
                                 ChartMetadata.Add(stepData);
 
                                 //skip the stream reader ahead to the next tag
@@ -90,18 +88,27 @@ namespace StepmaniaUtils.Core
                             }
                             else
                             {
-                                var value = ReadTagValue(reader, valueBuffer);
+                                var value = ReadTagValue(reader, buffer);
                                 _attributes.Add(tag, value);
                             }
                         }
 
-                        tagBuffer.Clear();
+                        buffer.Clear();
                     }
                     else
                     {
-                        tagBuffer.Append((char)reader.Read());
+                        buffer.Append((char)reader.Read());
                     }
                 }
+            }
+        }
+
+        public void AddLightsChart(LightsChart chart)
+        {
+            using (var stream = new FileStream(FilePath, FileMode.Append, FileAccess.Write))
+            using (var writer = new StreamWriter(stream))
+            {
+                writer.Write(chart.Content);
             }
         }
 

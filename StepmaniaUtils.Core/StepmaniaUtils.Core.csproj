@@ -41,18 +41,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Extensions.cs" />
+    <Compile Include="Core\LightsChart.cs" />
     <Compile Include="Core\StepChartBuilder.cs" />
     <Compile Include="Enums\EnumExtensions.cs" />
     <Compile Include="Enums\SmFileAttribute.cs" />
     <Compile Include="Enums\SongDifficulty.cs" />
-    <Compile Include="StepChart\ChartMetadata.cs" />
-    <Compile Include="StepChart\StepData.cs" />
+    <Compile Include="StepData\ChartMetadata.cs" />
     <Compile Include="Enums\PlayStyle.cs" />
-    <Compile Include="StepChart\MeasureData.cs" />
-    <Compile Include="StepChart\ColumnData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\SmFile.cs" />
-    <Compile Include="StepChart\StepMetadata.cs" />
+    <Compile Include="StepData\StepMetadata.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
