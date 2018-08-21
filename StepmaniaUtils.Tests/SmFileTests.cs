@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StepmaniaUtils.Core;
@@ -8,7 +9,13 @@ namespace StepmaniaUtils.Tests
 {
     [TestClass]
     public class SmFileTests
-    { 
+    {
+        [TestMethod]
+        public void Canary()
+        {
+            Assert.IsTrue(true);
+        }
+
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void NonExistentFile()
@@ -106,13 +113,35 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/Cupcake/BadTag.sm", "TestData/Cupcake/")]
-        public void TestInfiniteLoopCupcakeTimingBug()
+        public void TestInvalidTag()
         {
             var smFile = new SmFile("TestData/Cupcake/BadTag.sm");
             Assert.AreEqual("Watch Out! Swing Up!", smFile.SongTitle);
             Assert.AreEqual("TestData", smFile.Group); //Group name is the name of the parent folder
             Assert.AreEqual("../Cupcake Timing Festival v2-bn.png", smFile.BannerPath);
             Assert.AreEqual("FAKE TYPE.", smFile.Artist);
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
+        [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.png", "TestData/DDR1stMix/")]
+        public void TestValidBannerPath()
+        {
+            var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
+            var fullPath = Path.Combine(smFile.Directory, smFile.BannerPath);
+            Assert.IsTrue(File.Exists(fullPath), $"Banner path could not be found: {fullPath}");
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestData/Chris/gargoyle.sm", "Testdata/Chris/")]
+        [DeploymentItem("TestData/bn.png", "TestData/")]
+        public void TestMissingSemicolon()
+        {
+            var smFile = new SmFile("TestData/Chris/gargoyle.sm");
+
+            var fullPath = Path.Combine(smFile.Directory, smFile.BannerPath);
+            //Banner tag is missing a semicolon, attempt to delimit the path by newline to get proper banner
+            Assert.IsTrue(File.Exists(fullPath), $"Banner path could not be found: {fullPath}");
         }
     }
 }

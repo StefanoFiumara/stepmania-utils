@@ -14,10 +14,10 @@ namespace StepmaniaUtils.Core
             Attributes.ContainsKey(attribute) ? Attributes[attribute] : string.Empty;
 
         public string SongTitle => this[SmFileAttribute.TITLE];
-        public string BannerPath => this[SmFileAttribute.BANNER];
         public string Artist => this[SmFileAttribute.ARTIST];
-
+        
         public string Directory { get; }
+        public string BannerPath => this[SmFileAttribute.BANNER];
         public string Group { get; }
         public string FilePath { get; }
 
@@ -50,7 +50,7 @@ namespace StepmaniaUtils.Core
             ChartMetadata = new ChartMetadata();
             _attributes = new Dictionary<SmFileAttribute, string>();
 
-            ParseFile();
+            ParseFile();   
         }
 
         public void Refresh()
@@ -89,7 +89,7 @@ namespace StepmaniaUtils.Core
                             else
                             {
                                 var value = ReadTagValue(reader, buffer);
-
+                                
                                 if (!_attributes.ContainsKey(tag))
                                 {
                                     _attributes.Add(tag, value);
@@ -130,12 +130,12 @@ namespace StepmaniaUtils.Core
         {
             reader.Read(); //toss ':' token
             buffer.Clear();
-            while (reader.Peek() != ';')
+            while (reader.Peek() != ';' && reader.Peek() != '\n') //read until semicolon or newline char
             {
                 buffer.Append((char) reader.Read());
             }
 
-            return buffer.ToString();
+            return buffer.ToString().Trim();
         }
 
         internal static StepMetadata ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
