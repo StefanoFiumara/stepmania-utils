@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using StepmaniaUtils.Enums;
+using StepmaniaUtils.Extensions;
 using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils.Core
