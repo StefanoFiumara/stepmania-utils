@@ -29,79 +29,43 @@ namespace StepmaniaUtils.Core
 
         private static string GenerateLightsChart(string file, StepMetadata referenceData)
         {
-            var buffer = new StringBuilder();
-            
-            using (var stream = new FileStream(file, FileMode.Open, FileAccess.Read))
-            using (var reader = new StreamReader(stream))
+            using (var reader = new SmFileReader(file))
             {
-                while (!reader.EndOfStream)
+                while (reader.ReadNextTag(out SmFileAttribute tag))
                 {
-                    if (reader.Peek() == ':')
+                    if (tag != SmFileAttribute.NOTES) continue;
+
+                    var stepData = reader.ReadStepchartMetadata();
+
+                    if (stepData.PlayStyle == referenceData.PlayStyle && stepData.Difficulty == referenceData.Difficulty)
                     {
-                        //buffer contains tag in the format #TAG
-                        var tag = buffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
-                        
-                        if (tag == SmFileAttribute.NOTES)
-                        {
-                            var stepData = SmFile.ReadStepchartMetadata(reader, buffer);
-                            if (stepData.PlayStyle == referenceData.PlayStyle && stepData.Difficulty == referenceData.Difficulty)
-                            {
-                                //Skip groove radar values
-                                SmFile.ReadNextNoteHeaderSection(reader, buffer);
-
-                                buffer.Clear();
-
-                                return GenerateLightsChart(reader, buffer);
-                            }
-                            //wrong chart, skip the stream reader ahead to the next tag
-                            while (reader.Peek() != ';') reader.Read();
-                        }
-                        else
-                        {   //skip
-                            while (reader.Peek() != ';') reader.Read();
-                        }
-
-                        buffer.Clear();
-
-                    }
-                    else
-                    {
-                        buffer.Append((char)reader.Read());
+                        return GenerateLightsChart(reader);
                     }
                 }
             }
-
+            
             throw new Exception($"Could not find note data to reference in {file}");
         }
 
-        private static string GenerateLightsChart(StreamReader reader, StringBuilder buffer)
+        private static string GenerateLightsChart(SmFileReader reader)
         {
             var result = new StringBuilder()
-                  .AppendLine($"//---------------lights-cabinet-----------------")
-                  .AppendLine($"#NOTES:")
-                  .AppendLine($"    lights-cabinet:")
-                  .AppendLine($"    auto-generated:")
-                  .AppendLine($"    Easy:")
-                  .AppendLine($"    1:")
-                  .AppendLine($"    0.000,0.000,0.000,0.000,0.000:");
+                  .AppendLine("//---------------lights-cabinet-----------------")
+                  .AppendLine("#NOTES:")
+                  .AppendLine("    lights-cabinet:")
+                  .AppendLine("    auto-generated:")
+                  .AppendLine("    Easy:")
+                  .AppendLine("    1:")
+                  .AppendLine("    0.000,0.000,0.000,0.000,0.000:");
             
             var measureData = new List<string>(192);
 
             bool isHolding = false;
 
-            while (reader.Peek() != ';')
+            while (reader.IsParsingNoteData)
             {
-                buffer.Clear();
                 measureData.Clear();
-
-                while (reader.Peek() != ',' && reader.Peek() != ';') buffer.Append((char) reader.Read());
-
-                var measureLines = buffer.ToString().Split(Environment.NewLine.ToCharArray())
-                                                    .Select(data => data.Trim())
-                                                    .Where(data => !data.Contains(@"//"))
-                                                    .Where(data => !string.IsNullOrWhiteSpace(data));
-
-                measureData.AddRange(measureLines);
+                measureData.AddRange( reader.ReadMeasure() );
 
                 int quarterNoteBeatIndicator = measureData.Count / 4;
                 int noteIndex = 0;
@@ -142,15 +106,9 @@ namespace StepmaniaUtils.Core
                     noteIndex++;
                 }
 
-                if (reader.Peek() == ';')
-                {
-                    result.AppendLine(";");
-                }
-                else
-                {
-                    result.AppendLine(",");
-                    reader.Read(); //consume delimiter.
-                }
+                //Append a ',' if there are more measures to parse
+                //Otherwise append a ';' to dictate the end of the chart
+                result.AppendLine(reader.IsParsingNoteData ? "," : ";");
             }
 
             return result.ToString();

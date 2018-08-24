@@ -63,55 +63,31 @@ namespace StepmaniaUtils.Core
 
         private void ParseFile()
         {
-            var buffer = new StringBuilder();
-        
-            using (var stream = new FileStream(FilePath, FileMode.Open, FileAccess.Read))
-            using (var reader = new StreamReader(stream))
+            using (var reader = new SmFileReader(FilePath))
             {
-                while (!reader.EndOfStream)
+                while (reader.ReadNextTag(out SmFileAttribute tag))
                 {
-                    if (reader.Peek() == ':')
+                    if (tag == SmFileAttribute.NOTES)
                     {
-                        //buffer contains tag in the format #TAG
-                        var tag = buffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
+                        var stepData = reader.ReadStepchartMetadata();
 
-                        if (tag != SmFileAttribute.UNDEFINED)
-                        {
-                            if (tag == SmFileAttribute.NOTES)
-                            {
-                                //Parse chart metadata
-                                var stepData = ReadStepchartMetadata(reader, buffer);
-                                ChartMetadata.Add(stepData);
+                        ChartMetadata.Add(stepData);
 
-                                //skip the stream reader ahead to the next tag
-                                while (reader.Peek() != ';') reader.Read();
-                            }
-                            else
-                            {
-                                var value = ReadTagValue(reader, buffer);
-                                
-                                if (!_attributes.ContainsKey(tag))
-                                {
-                                    _attributes.Add(tag, value);
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"Attempting to add duplicate header tag for song: {FilePath}");
-                                    Console.WriteLine($"Duplicate Tag: {tag}");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //could not read tag, toss the ':' token and continue
-                            reader.Read();
-                        }
-
-                        buffer.Clear();
+                        reader.SkipValue();
                     }
                     else
                     {
-                        buffer.Append((char)reader.Read());
+                        var value = reader.ReadTagValue();
+
+                        if (!_attributes.ContainsKey(tag))
+                        {
+                            _attributes.Add(tag, value);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Attempting to add duplicate header tag for song: {FilePath}");
+                            Console.WriteLine($"Duplicate Tag: {tag}");
+                        }
                     }
                 }
             }
@@ -124,45 +100,6 @@ namespace StepmaniaUtils.Core
             {
                 writer.Write(chart.Content);
             }
-        }
-
-        internal static string ReadTagValue(StreamReader reader, StringBuilder buffer)
-        {
-            reader.Read(); //toss ':' token
-            buffer.Clear();
-            while (reader.Peek() != ';' && reader.Peek() != '\n') //read until semicolon or newline char
-            {
-                buffer.Append((char) reader.Read());
-            }
-
-            return buffer.ToString().Trim();
-        }
-
-        internal static StepMetadata ReadStepchartMetadata(StreamReader reader, StringBuilder buffer)
-        {
-            reader.Read(); //toss ':' token
-
-            var stepData = new StepMetadata
-            {
-                PlayStyle = ReadNextNoteHeaderSection(reader, buffer).ToStyleEnum(),
-                ChartAuthor = ReadNextNoteHeaderSection(reader, buffer),
-                Difficulty = ReadNextNoteHeaderSection(reader, buffer).ToSongDifficultyEnum(),
-                DifficultyRating = (int) double.Parse(ReadNextNoteHeaderSection(reader, buffer))
-            };
-            
-            return stepData;
-        }
-
-        internal static string ReadNextNoteHeaderSection(StreamReader reader, StringBuilder buffer)
-        {
-            buffer.Clear();
-            while (reader.Peek() != ':')
-            {
-                buffer.Append((char)reader.Read());
-            }
-            reader.Read(); //toss ':' token
-
-            return buffer.SkipWhile(char.IsWhiteSpace).ToString();
         }
     }
 }

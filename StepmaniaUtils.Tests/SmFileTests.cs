@@ -133,7 +133,7 @@ namespace StepmaniaUtils.Tests
         }
 
         [TestMethod]
-        [DeploymentItem("TestData/Chris/gargoyle.sm", "Testdata/Chris/")]
+        [DeploymentItem("TestData/Chris/gargoyle.sm", "TestData/Chris/")]
         [DeploymentItem("TestData/bn.png", "TestData/")]
         public void TestMissingSemicolon()
         {
