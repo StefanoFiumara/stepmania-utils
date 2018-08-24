@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
+using StepmaniaUtils.Core;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepData;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils.StepGenerator
 {
     public static class StepChartBuilder
     {

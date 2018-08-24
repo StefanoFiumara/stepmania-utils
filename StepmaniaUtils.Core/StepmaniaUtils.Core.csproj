@@ -40,11 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\Extensions.cs" />
-    <Compile Include="Core\LightsChart.cs" />
+    <Compile Include="Extensions\StringBuilderExtensions.cs" />
+    <Compile Include="StepGenerator\LightsChart.cs" />
     <Compile Include="Core\SmFileReader.cs" />
-    <Compile Include="Core\StepChartBuilder.cs" />
-    <Compile Include="Enums\EnumExtensions.cs" />
+    <Compile Include="StepGenerator\StepChartBuilder.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Enums\SmFileAttribute.cs" />
     <Compile Include="Enums\SongDifficulty.cs" />
     <Compile Include="StepData\ChartMetadata.cs" />

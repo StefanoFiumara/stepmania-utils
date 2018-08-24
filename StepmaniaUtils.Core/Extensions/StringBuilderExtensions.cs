@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Text;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils.Extensions
 {
-    internal static class Extensions
+    internal static class StringBuilderExtensions
     {
-        public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dict)
-        {
-            return new ReadOnlyDictionary<TKey, TValue>(dict);
-        }
-
         public static StringBuilder SkipWhile(this StringBuilder sb, Func<char, bool> condition)
         {
             int skipCount = 0;

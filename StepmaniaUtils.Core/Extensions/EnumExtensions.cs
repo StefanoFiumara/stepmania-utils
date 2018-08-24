@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using StepmaniaUtils.Enums;
 
-namespace StepmaniaUtils.Enums
+namespace StepmaniaUtils.Extensions
 {
     public static class EnumExtensions
     {
@@ -15,6 +16,7 @@ namespace StepmaniaUtils.Enums
             return SmFileAttribute.UNDEFINED;
         }
 
+        //TODO: Is this needed? if so, add unit tests, otherwise remove (check Dedicab Utility)
         public static string ToStyleName(this PlayStyle style)
         {
             switch (style)
@@ -29,9 +31,8 @@ namespace StepmaniaUtils.Enums
                     return "dance-solo";
                 case PlayStyle.Lights:
                     return "lights-cabinet";
-
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(style), style, null);
+                    return string.Empty;
             }
         }
 

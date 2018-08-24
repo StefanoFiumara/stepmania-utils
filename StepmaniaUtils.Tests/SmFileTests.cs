@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StepmaniaUtils.Core;
 using StepmaniaUtils.Enums;
+using StepmaniaUtils.StepGenerator;
 
 namespace StepmaniaUtils.Tests
 {
