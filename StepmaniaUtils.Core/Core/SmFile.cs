@@ -22,6 +22,7 @@ namespace StepmaniaUtils.Core
         public string BannerPath => this[SmFileAttribute.BANNER];
         public string Group { get; }
         public string FilePath { get; }
+        public string DisplayBpm { get; private set; }
 
         public ChartMetadata ChartMetadata { get; private set; }
         
@@ -29,6 +30,7 @@ namespace StepmaniaUtils.Core
 
         public IReadOnlyDictionary<SmFileAttribute, string> Attributes => new ReadOnlyDictionary<SmFileAttribute, string>(_attributes);
         
+
 
         public SmFile(string filePath)
         {
@@ -53,7 +55,37 @@ namespace StepmaniaUtils.Core
             ChartMetadata = new ChartMetadata();
             _attributes = new Dictionary<SmFileAttribute, string>();
 
-            ParseFile();   
+            ParseFile();
+            SetDisplayBpm();
+        }
+
+        private void SetDisplayBpm()
+        {
+            if (_attributes.TryGetValue(SmFileAttribute.DISPLAYBPM, out string displayBpm) && displayBpm != "*")
+            {
+                if (displayBpm.Contains(':'))
+                {
+                    var bpms = displayBpm.Split(':').Select(double.Parse).ToList();
+
+                    var highest = bpms.Max();
+                    var lowest = bpms.Min();
+
+                    DisplayBpm = $"{lowest:####}-{highest:####}";
+                }
+                else
+                {
+                    DisplayBpm = $"{double.Parse(displayBpm):####}";
+                }
+            }
+            else
+            {
+                var bpms = _attributes[SmFileAttribute.BPMS].Split(',').Select(t => t.Split('=')[1]).Select(double.Parse).ToList();
+
+                var highest = bpms.Max();
+                var lowest = bpms.Min();
+
+                DisplayBpm = Math.Abs(highest - lowest) > 0.01f ? $"{lowest:####}-{highest:####}" : $"{highest:####}";
+            }
         }
 
         public void Refresh()
@@ -62,6 +94,7 @@ namespace StepmaniaUtils.Core
             _attributes = new Dictionary<SmFileAttribute, string>();
 
             ParseFile();
+            SetDisplayBpm();
         }
 
         private void ParseFile()
@@ -86,12 +119,6 @@ namespace StepmaniaUtils.Core
                         {
                             _attributes.Add(tag, value);
                         }
-                        else
-                        {
-                            //TODO: Implement logging or ignore this
-                            Console.WriteLine($"Attempting to add duplicate header tag for song: {FilePath}");
-                            Console.WriteLine($"Duplicate Tag: {tag}");
-                        }
                     }
                 }
             }
@@ -99,6 +126,7 @@ namespace StepmaniaUtils.Core
 
         public void AddLightsChart(LightsChart chart)
         {
+            //TODO: Backup file
             using (var stream = new FileStream(FilePath, FileMode.Append, FileAccess.Write))
             using (var writer = new StreamWriter(stream))
             {

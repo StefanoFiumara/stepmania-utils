@@ -144,5 +144,23 @@ namespace StepmaniaUtils.Tests
             //Banner tag is missing a semicolon, attempt to delimit the path by newline to get proper banner
             Assert.IsTrue(File.Exists(fullPath), $"Banner path could not be found: {fullPath}");
         }
+
+        [TestMethod]
+        [DeploymentItem("TestData/Doubles/ArabianNights.sm", "TestData/Doubles")]
+        public void TestDisplayBpm()
+        {
+            var smFile = new SmFile("TestData/Doubles/ArabianNights.sm");
+
+            Assert.AreEqual("138", smFile.DisplayBpm);
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestData/Chris/gargoyle.sm", "TestData/Chris")]
+        public void TestDisplayBpmWithoutTag()
+        {
+            var smFile = new SmFile("TestData/Chris/gargoyle.sm");
+
+            Assert.AreEqual("75-150", smFile.DisplayBpm);
+        }
     }
 }
