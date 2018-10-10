@@ -162,5 +162,23 @@ namespace StepmaniaUtils.Tests
 
             Assert.AreEqual("75-150", smFile.DisplayBpm);
         }
+
+        [TestMethod]
+        [DeploymentItem("TestData/Misc/raffles.sm", "TestData/Misc")]
+        public void TestDisplayBpm_WithNewLineInBPMTags()
+        {
+            var smFile = new SmFile(@"TestData/Misc/raffles.sm");
+
+            Assert.AreEqual("105-210", smFile.DisplayBpm);
+        }
+
+        [TestMethod]
+        [DeploymentItem("TestData/Misc/monopoly.sm", "TestData/Misc")]
+        public void TestDisplayBpm_WithNewLineInBPMTags_2() //TODO:Placeholder...figure out the actual issue with this .sm file
+        {
+            var smFile = new SmFile("TestData/Misc/monopoly.sm");
+
+            Assert.AreEqual("174-2784", smFile.DisplayBpm);
+        }
     }
 }

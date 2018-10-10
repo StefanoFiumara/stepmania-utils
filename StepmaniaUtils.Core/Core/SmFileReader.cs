@@ -167,7 +167,7 @@ namespace StepmaniaUtils.Core
 
             var measureLines = _buffer.ToString().Split(Environment.NewLine.ToCharArray())
                 .Select(data => data.Trim())
-                .Where(data => !data.Contains(@"//"))
+                .Where(data => !data.Contains("//"))
                 .Where(data => !string.IsNullOrWhiteSpace(data));
 
             if (_reader.Peek() == ';')
