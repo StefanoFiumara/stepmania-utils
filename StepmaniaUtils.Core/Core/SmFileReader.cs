@@ -105,7 +105,7 @@ namespace StepmaniaUtils.Core
 
             _reader.Read(); //toss ':' token
             _buffer.Clear();
-            while (_reader.Peek() != ';' && _reader.Peek() != '\n') //read until semicolon or newline char
+            while (_reader.Peek() != ';' && _reader.Peek() != '#') //read until semicolon or next tag
             {
                 _buffer.Append((char)_reader.Read());
             }

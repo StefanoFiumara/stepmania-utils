@@ -174,8 +174,11 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/Misc/monopoly.sm", "TestData/Misc")]
-        public void TestDisplayBpm_WithNewLineInBPMTags_2() //TODO:Placeholder...figure out the actual issue with this .sm file
+        public void TestDisplayBpm_WithNewLineInBPMTags_2() 
         {
+            
+            //TODO: Placeholder...figure out the actual issue with this .sm file
+            //TODO: If no issue - update dll's in Dedicab Utility
             var smFile = new SmFile("TestData/Misc/monopoly.sm");
 
             Assert.AreEqual("174-2784", smFile.DisplayBpm);
