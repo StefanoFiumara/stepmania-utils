@@ -30,8 +30,6 @@ namespace StepmaniaUtils.Core
 
         public IReadOnlyDictionary<SmFileAttribute, string> Attributes => new ReadOnlyDictionary<SmFileAttribute, string>(_attributes);
         
-
-
         public SmFile(string filePath)
         {
             if (!Path.IsPathRooted(filePath))

@@ -37,10 +37,11 @@ namespace StepmaniaUtils.Core
             {
                 throw new ArgumentNullException(nameof(smFilePath), "*.sm file path cannot be null or empty");
             }
-            if (Path.GetExtension(smFilePath) != ".sm")
+            if (!smFilePath.ToLower().EndsWith(".sm"))
             {
                 throw new ArgumentException("File path must point to a *.sm file", nameof(smFilePath));
             }
+
             _stream = new FileStream(smFilePath, FileMode.Open, FileAccess.Read);
             _reader = new StreamReader(_stream);
             _buffer = new StringBuilder();
