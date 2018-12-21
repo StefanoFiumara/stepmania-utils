@@ -63,7 +63,7 @@ namespace StepmaniaUtils.Tests
         public void SmFile_ChartMetadata_Populates_All_Stepcharts()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            Assert.IsTrue(smFile.ChartMetadata.StepCharts.Count > 0); //TODO: Test for exact number
+            Assert.IsTrue(smFile.ChartMetadata.StepCharts.Count == 16);
         }
         
         [TestMethod]
