@@ -12,21 +12,15 @@ namespace StepmaniaUtils.Tests
     public class SmFileTests
     {
         [TestMethod]
-        public void Canary()
-        {
-            Assert.IsTrue(true);
-        }
-
-        [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
-        public void NonExistentFile()
+        public void SmFile_Throws_Exception_When_File_Does_Not_Exist()
         {
             var smFile = new SmFile("TestData/wrongFile.sm");
         }
 
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GetTitleAttribute()
+        public void SmFile_Correctly_Populates_Title_Tag()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             string value = smFile[SmFileAttribute.TITLE];
@@ -36,7 +30,7 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GetNonExistentAttribute()
+        public void SmFile_Returns_Empty_String_For_NonExistent_Attribute()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             string value = smFile[SmFileAttribute.TIMESIGNATURES];
@@ -46,7 +40,7 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GetCommonAttributes()
+        public void SmFile_Common_Attributes_Are_Populated()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             Assert.AreEqual("BUTTERFLY", smFile.SongTitle);
@@ -56,7 +50,7 @@ namespace StepmaniaUtils.Tests
         }
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GetHighestDifficulty()
+        public void SmFile_GetHighestChartedDifficulty_Returns_The_Highest_Difficulty()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             var songDifficulty = smFile.ChartMetadata.GetHighestChartedDifficulty(PlayStyle.Single);
@@ -66,15 +60,15 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GetChartData()
+        public void SmFile_ChartMetadata_Populates_All_Stepcharts()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
-            Assert.IsTrue(smFile.ChartMetadata.StepCharts.Count > 0);
+            Assert.IsTrue(smFile.ChartMetadata.StepCharts.Count > 0); //TODO: Test for exact number
         }
         
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void GenerateLightsChart()
+        public void SmFile_GenerateLightsChart_Generates_Lights_Data_Content()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             var lightsData = StepChartBuilder.GenerateLightsChart(smFile);
@@ -84,7 +78,7 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/Doubles/ArabianNights.sm", "TestData/Doubles/")]
-        public void GenerateLightsChart_Doubles()
+        public void SmFile_GenerateLightsChart_Generates_Lights_Data_Content_For_Doubles_Only_Chart()
         {
             var smFile = new SmFile("TestData/Doubles/ArabianNights.sm");
             
@@ -95,7 +89,7 @@ namespace StepmaniaUtils.Tests
         
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
-        public void SaveChartData()
+        public void SmFile_Saves_Light_Chart_Data_To_File()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
 
@@ -111,22 +105,11 @@ namespace StepmaniaUtils.Tests
             Assert.IsFalse(hasLightsBeforeSave);
             Assert.IsTrue(hasLightsAfterSave, "SM file did not have lights chart after save");
         }
-
-        [TestMethod]
-        [DeploymentItem("TestData/Cupcake/BadTag.sm", "TestData/Cupcake/")]
-        public void TestInvalidTag()
-        {
-            var smFile = new SmFile("TestData/Cupcake/BadTag.sm");
-            Assert.AreEqual("Watch Out! Swing Up!", smFile.SongTitle);
-            Assert.AreEqual("TestData", smFile.Group); //Group name is the name of the parent folder
-            Assert.AreEqual("../Cupcake Timing Festival v2-bn.png", smFile.BannerPath);
-            Assert.AreEqual("FAKE TYPE.", smFile.Artist);
-        }
-
+        
         [TestMethod]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.sm", "TestData/DDR1stMix/")]
         [DeploymentItem("TestData/DDR1stMix/BUTTERFLY.png", "TestData/DDR1stMix/")]
-        public void TestValidBannerPath()
+        public void SmFile_BannerPath_Points_To_Valid_File()
         {
             var smFile = new SmFile("TestData/DDR1stMix/BUTTERFLY.sm");
             var fullPath = Path.Combine(smFile.Directory, smFile.BannerPath);
@@ -136,18 +119,18 @@ namespace StepmaniaUtils.Tests
         [TestMethod]
         [DeploymentItem("TestData/Chris/gargoyle.sm", "TestData/Chris/")]
         [DeploymentItem("TestData/bn.png", "TestData/")]
-        public void TestMissingSemicolon()
+        public void SmFile_With_Missing_Semicolon_Still_Reads_Proper_Banner_Path()
         {
             var smFile = new SmFile("TestData/Chris/gargoyle.sm");
 
             var fullPath = Path.Combine(smFile.Directory, smFile.BannerPath);
-            //Banner tag is missing a semicolon, attempt to delimit the path by newline to get proper banner
+            
             Assert.IsTrue(File.Exists(fullPath), $"Banner path could not be found: {fullPath}");
         }
 
         [TestMethod]
         [DeploymentItem("TestData/Doubles/ArabianNights.sm", "TestData/Doubles")]
-        public void TestDisplayBpm()
+        public void SmFile_With_DisplayBpm_Tag_Shows_Correct_Bpm()
         {
             var smFile = new SmFile("TestData/Doubles/ArabianNights.sm");
 
@@ -156,7 +139,7 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/Chris/gargoyle.sm", "TestData/Chris")]
-        public void TestDisplayBpmWithoutTag()
+        public void SmFile_With_No_DisplayBpm_Tag_Still_Shows_Correct_Bpm_Range()
         {
             var smFile = new SmFile("TestData/Chris/gargoyle.sm");
 
@@ -165,23 +148,11 @@ namespace StepmaniaUtils.Tests
 
         [TestMethod]
         [DeploymentItem("TestData/Misc/raffles.sm", "TestData/Misc")]
-        public void TestDisplayBpm_WithNewLineInBPMTags()
+        public void SmFile_With_No_DisplayBpm_Tag_With_NewLines_In_Bpm_Tag_Shows_Correct_Bpm_Range()
         {
             var smFile = new SmFile(@"TestData/Misc/raffles.sm");
 
             Assert.AreEqual("105-210", smFile.DisplayBpm);
-        }
-
-        [TestMethod]
-        [DeploymentItem("TestData/Misc/monopoly.sm", "TestData/Misc")]
-        public void TestDisplayBpm_WithNewLineInBPMTags_2() 
-        {
-            
-            //TODO: Placeholder...figure out the actual issue with this .sm file
-            //TODO: If no issue - update dll's in Dedicab Utility
-            var smFile = new SmFile("TestData/Misc/monopoly.sm");
-
-            Assert.AreEqual("174-2784", smFile.DisplayBpm);
         }
     }
 }

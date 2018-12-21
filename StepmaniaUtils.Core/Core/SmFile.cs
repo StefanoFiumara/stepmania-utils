@@ -37,9 +37,11 @@ namespace StepmaniaUtils.Core
                 filePath = Path.GetFullPath(filePath);
             }
 
-            if (File.Exists(filePath) == false || !filePath.ToLower().EndsWith(".sm"))
+            var validExtensions = new[] {".sm", ".ssc"};
+
+            if (File.Exists(filePath) == false || !validExtensions.Contains(Path.GetExtension(filePath)))
             {
-                throw new ArgumentException($"The given .sm file path is either invalid or a file was not found. Path: {filePath}");
+                throw new ArgumentException($"The given .sm or .ssc file path is either invalid or a file was not found. Path: {filePath}");
             }
 
             FilePath = filePath;
@@ -59,7 +61,7 @@ namespace StepmaniaUtils.Core
 
         private void SetDisplayBpm()
         {
-            if (_attributes.TryGetValue(SmFileAttribute.DISPLAYBPM, out string displayBpm) && displayBpm != "*")
+            if (_attributes.TryGetValue(SmFileAttribute.DISPLAYBPM, out string displayBpm) && displayBpm != "*" && displayBpm != "?")
             {
                 if (displayBpm.Contains(':'))
                 {

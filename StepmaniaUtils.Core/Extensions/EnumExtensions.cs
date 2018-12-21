@@ -4,7 +4,7 @@ using StepmaniaUtils.Enums;
 
 namespace StepmaniaUtils.Extensions
 {
-    public static class EnumExtensions
+    internal static class EnumExtensions
     {
         public static SmFileAttribute ToAttribute(this string attr)
         {
@@ -15,27 +15,7 @@ namespace StepmaniaUtils.Extensions
 
             return SmFileAttribute.UNDEFINED;
         }
-
-        //TODO: Is this needed? if so, add unit tests, otherwise remove (check Dedicab Utility)
-        public static string ToStyleName(this PlayStyle style)
-        {
-            switch (style)
-            {
-                case PlayStyle.Single:
-                    return "dance-single";
-                case PlayStyle.Double:
-                    return "dance-double";
-                case PlayStyle.Couple:
-                    return "dance-couple";
-                case PlayStyle.Solo:
-                    return "dance-solo";
-                case PlayStyle.Lights:
-                    return "lights-cabinet";
-                default:
-                    return string.Empty;
-            }
-        }
-
+        
         public static PlayStyle ToStyleEnum(this string styleName)
         {
             styleName = styleName.Trim().TrimEnd(':');
