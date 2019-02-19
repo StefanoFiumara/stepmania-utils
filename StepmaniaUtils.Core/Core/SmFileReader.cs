@@ -129,14 +129,14 @@ namespace StepmaniaUtils.Core
 
             var stepData = new StepMetadata
             {
-                PlayStyle = ReadNextNoteHeaderSection().ToStyleEnum(),
-                ChartAuthor = ReadNextNoteHeaderSection(),
-                Difficulty = ReadNextNoteHeaderSection().ToSongDifficultyEnum(),
-                DifficultyRating = (int)double.Parse(ReadNextNoteHeaderSection())
+                PlayStyle = ReadNoteHeaderSection().ToStyleEnum(),
+                ChartAuthor = ReadNoteHeaderSection(),
+                Difficulty = ReadNoteHeaderSection().ToSongDifficultyEnum(),
+                DifficultyRating = (int)double.Parse(ReadNoteHeaderSection())
             };
 
             //Skip groove radar values
-            ReadNextNoteHeaderSection();
+            ReadNoteHeaderSection();
 
             IsParsingNoteData = true;
 
@@ -184,7 +184,7 @@ namespace StepmaniaUtils.Core
 
         }
         
-        private string ReadNextNoteHeaderSection()
+        private string ReadNoteHeaderSection()
         {
             _buffer.Clear();
             while (_reader.Peek() != ':')

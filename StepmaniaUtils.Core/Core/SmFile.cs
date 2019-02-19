@@ -59,6 +59,33 @@ namespace StepmaniaUtils.Core
             SetDisplayBpm();
         }
 
+        private void ParseFile()
+        {
+            using (var reader = new SmFileReader(FilePath))
+            {
+                while (reader.ReadNextTag(out SmFileAttribute tag))
+                {
+                    if (tag == SmFileAttribute.NOTES)
+                    {
+                        var stepData = reader.ReadStepchartMetadata();
+
+                        ChartMetadata.Add(stepData);
+
+                        reader.SkipValue();
+                    }
+                    else
+                    {
+                        var value = reader.ReadTagValue();
+
+                        if (!_attributes.ContainsKey(tag))
+                        {
+                            _attributes.Add(tag, value);
+                        }
+                    }
+                }
+            }
+        }
+
         private void SetDisplayBpm()
         {
             if (_attributes.TryGetValue(SmFileAttribute.DISPLAYBPM, out string displayBpm) && displayBpm != "*" && displayBpm != "?")
@@ -88,6 +115,16 @@ namespace StepmaniaUtils.Core
             }
         }
 
+        public void WriteLightsChart(LightsChart chart)
+        {
+            if (!File.Exists($"{FilePath}.backup"))
+            {
+                File.Copy(FilePath, $"{FilePath}.backup");
+            }
+
+            File.AppendAllText(FilePath, chart.Content);
+        }
+
         public void Refresh()
         {
             ChartMetadata = new ChartMetadata();
@@ -95,43 +132,6 @@ namespace StepmaniaUtils.Core
 
             ParseFile();
             SetDisplayBpm();
-        }
-
-        private void ParseFile()
-        {
-            using (var reader = new SmFileReader(FilePath))
-            {
-                while (reader.ReadNextTag(out SmFileAttribute tag))
-                {
-                    if (tag == SmFileAttribute.NOTES)
-                    {
-                        var stepData = reader.ReadStepchartMetadata();
-
-                        ChartMetadata.Add(stepData);
-
-                        reader.SkipValue();
-                    }
-                    else
-                    {
-                        var value = reader.ReadTagValue();
-
-                        if (!_attributes.ContainsKey(tag))
-                        {
-                            _attributes.Add(tag, value);
-                        }
-                    }
-                }
-            }
-        }
-
-        public void AddLightsChart(LightsChart chart)
-        {
-            //TODO: Backup file
-            using (var stream = new FileStream(FilePath, FileMode.Append, FileAccess.Write))
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.Write(chart.Content);
-            }
         }
     }
 }

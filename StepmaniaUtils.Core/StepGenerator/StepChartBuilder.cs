@@ -24,7 +24,7 @@ namespace StepmaniaUtils.StepGenerator
 
             var lightsData = GenerateLightsChart(file.FilePath, reference);
             
-            return new LightsChart(lightsData);
+            return new LightsChart(lightsData, reference);
         }
 
         private static string GenerateLightsChart(string file, StepMetadata referenceData)

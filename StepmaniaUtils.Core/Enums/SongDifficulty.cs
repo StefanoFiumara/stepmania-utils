@@ -2,6 +2,7 @@
 {
     public enum SongDifficulty
     {
+        None,
         Beginner,
         Easy,
         Medium,
