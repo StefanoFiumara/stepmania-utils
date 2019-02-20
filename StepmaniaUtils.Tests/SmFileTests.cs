@@ -248,5 +248,34 @@ namespace StepmaniaUtils.Tests
 
             catch { /* intentionally left empty */ }
         }
+
+        [Theory]
+        [InlineData(TEST_DATA_BUTTERFLY)]
+        [InlineData(TEST_DATA_GARGOYLE)]
+        [InlineData(TEST_DATA_ARABIAN_NIGHTS)]
+        [InlineData(TEST_DATA_RAFFLES)]
+        public void SMFile_LightsChart_Does_Not_Leave_Unended_Holds(string smFilePath)
+        {
+            var smFileCopy = $"{smFilePath}.test.sm";
+            string backupFilePath = $"{smFileCopy}.backup";
+
+            File.Copy(smFilePath, smFileCopy, true);
+            var smFile = new SmFile(smFileCopy);
+
+            var chart = StepChartBuilder.GenerateLightsChart(smFile);
+            smFile.WriteLightsChart(chart);
+
+            var endHoldState = LightsChartHelper.VerifyLightChartHolds(smFileCopy);
+
+            Assert.Equal(LightsChartHelper.LightChartHoldState.HoldingNone, endHoldState);
+
+            try
+            {
+                File.Delete(smFileCopy);
+                File.Delete(backupFilePath);
+            }
+
+            catch { /* intentionally left empty */ }
+        }
     }
 }
