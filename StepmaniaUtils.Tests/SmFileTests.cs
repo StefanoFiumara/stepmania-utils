@@ -41,6 +41,7 @@ namespace StepmaniaUtils.Tests
         [InlineData(TEST_DATA_BUTTERFLY)]
         [InlineData(TEST_DATA_GARGOYLE)]
         [InlineData(TEST_DATA_ARABIAN_NIGHTS)]
+        [MemberData(nameof(ITGOfficials.Data), MemberType = typeof(ITGOfficials))]
         public void SmFile_Returns_Empty_String_For_NonExistent_Attribute(string smFilePath)
         {
             var smFile = new SmFile(smFilePath);
@@ -202,7 +203,6 @@ namespace StepmaniaUtils.Tests
             var chart = StepChartBuilder.GenerateLightsChart(smFile);
 
             smFile.WriteLightsChart(chart);
-            smFile.Refresh();
 
             bool hasLightsAfterSave = smFile.ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null;
 
@@ -211,8 +211,34 @@ namespace StepmaniaUtils.Tests
 
             try
             {
-                File.Delete(smFileCopy);
-                File.Delete(backupFilePath);
+                if(File.Exists(smFileCopy)) File.Delete(smFileCopy);
+                if(File.Exists(backupFilePath)) File.Delete(backupFilePath);
+            }
+
+            catch { /* intentionally left empty */ }
+        }
+
+        [Theory]
+        [MemberData(nameof(ITGOfficials.Data), MemberType = typeof(ITGOfficials))]
+        public void SmFile_LightsChart_Throws_If_LightChart_Already_Exists(string smFilePath)
+        {
+            var smFileCopy = $"{smFilePath}.test.sm";
+            string backupFilePath = $"{smFileCopy}.backup";
+            
+            File.Copy(smFilePath, smFileCopy, true);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var smFile = new SmFile(smFileCopy);
+                var chart = StepChartBuilder.GenerateLightsChart(smFile);
+
+                smFile.WriteLightsChart(chart);
+            });
+
+            try
+            {
+                if(File.Exists(smFileCopy)) File.Delete(smFileCopy);
+                if(File.Exists(backupFilePath)) File.Delete(backupFilePath);
             }
 
             catch { /* intentionally left empty */ }
@@ -242,8 +268,8 @@ namespace StepmaniaUtils.Tests
 
             try
             {
-                File.Delete(smFileCopy);
-                File.Delete(backupFilePath);
+                if(File.Exists(smFileCopy)) File.Delete(smFileCopy);
+                if(File.Exists(backupFilePath)) File.Delete(backupFilePath);
             }
 
             catch { /* intentionally left empty */ }
@@ -254,8 +280,10 @@ namespace StepmaniaUtils.Tests
         [InlineData(TEST_DATA_GARGOYLE)]
         [InlineData(TEST_DATA_ARABIAN_NIGHTS)]
         [InlineData(TEST_DATA_RAFFLES)]
-        public void SMFile_LightsChart_Does_Not_Leave_Unended_Holds(string smFilePath)
+        public void SmFile_LightsChart_Does_Not_Leave_Unended_Holds(string smFilePath)
         {
+            // We create a copy of each .sm file since this test writes data to the files under test
+            // and we do not want this data to conflict with other tests
             var smFileCopy = $"{smFilePath}.test.sm";
             string backupFilePath = $"{smFileCopy}.backup";
 
@@ -271,8 +299,8 @@ namespace StepmaniaUtils.Tests
 
             try
             {
-                File.Delete(smFileCopy);
-                File.Delete(backupFilePath);
+                if(File.Exists(smFileCopy)) File.Delete(smFileCopy);
+                if(File.Exists(backupFilePath)) File.Delete(backupFilePath);
             }
 
             catch { /* intentionally left empty */ }

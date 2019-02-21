@@ -117,15 +117,22 @@ namespace StepmaniaUtils.Core
 
         public void WriteLightsChart(LightsChart chart)
         {
+            if (ChartMetadata.GetSteps(PlayStyle.Lights, SongDifficulty.Easy) != null)
+            {
+                throw new InvalidOperationException($"A light chart already exists in {FilePath}");
+            }
+
             if (!File.Exists($"{FilePath}.backup"))
             {
                 File.Copy(FilePath, $"{FilePath}.backup");
             }
 
             File.AppendAllText(FilePath, chart.Content);
+
+            RefreshMetadata();
         }
 
-        public void Refresh()
+        private void RefreshMetadata()
         {
             ChartMetadata = new ChartMetadata();
             _attributes = new Dictionary<SmFileAttribute, string>();

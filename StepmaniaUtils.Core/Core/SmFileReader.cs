@@ -67,7 +67,7 @@ namespace StepmaniaUtils.Core
                 }
                 else
                 {
-                    tag = _buffer.SkipWhile(c => c != '#').ToString().Trim('#').ToAttribute();
+                    tag = _buffer.SkipWhile(c => c != '#').ToString().Trim('#').AsSmFileAttribute();
 
                     //if the tag could not be read, skip this tag and read the next one
                     if (tag == SmFileAttribute.UNDEFINED)
@@ -129,13 +129,13 @@ namespace StepmaniaUtils.Core
 
             var stepData = new StepMetadata
             {
-                PlayStyle = ReadNoteHeaderSection().ToStyleEnum(),
+                PlayStyle = ReadNoteHeaderSection().AsPlayStyle(),
                 ChartAuthor = ReadNoteHeaderSection(),
-                Difficulty = ReadNoteHeaderSection().ToSongDifficultyEnum(),
+                Difficulty = ReadNoteHeaderSection().AsSongDifficulty(),
                 DifficultyRating = (int)double.Parse(ReadNoteHeaderSection())
             };
 
-            //Skip groove radar values
+            //Skip groove radar values - no one cares
             ReadNoteHeaderSection();
 
             IsParsingNoteData = true;

@@ -6,7 +6,7 @@ using StepmaniaUtils.Enums;
 
 namespace StepmaniaUtils.Tests
 {
-    public static class LightsChartHelper
+    internal static class LightsChartHelper
     {
         [Flags]
         public enum LightChartHoldState
@@ -55,7 +55,7 @@ namespace StepmaniaUtils.Tests
                     }
                     else
                     {
-                        throw new Exception($"Parser encountered HOLD_BEGIN on column {column}(note: {line[column]}, measure: {measure}) when hold state was already holding.\n{Path.GetFullPath(smFilePath)}");
+                        throw new Exception($"Parser encountered HOLD_BEGIN on column {column} (note: {line[column]}, measure: {measure}) when hold state was already holding.\n{Path.GetFullPath(smFilePath)}");
                     }
                 }
                 else if (line[column] == HOLD_END)
@@ -66,7 +66,7 @@ namespace StepmaniaUtils.Tests
                     }
                     else
                     {
-                        throw new Exception($"Parser encountered HOLD_END on column {column}(note: {line[column]}, measure: {measure}) when hold state was not holding.\n{Path.GetFullPath(smFilePath)}");
+                        throw new Exception($"Parser encountered HOLD_END on column {column} (note: {line[column]}, measure: {measure}) when hold state was not holding.\n{Path.GetFullPath(smFilePath)}");
                     }
                 }
             }

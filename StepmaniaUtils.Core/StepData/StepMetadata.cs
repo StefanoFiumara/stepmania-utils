@@ -6,6 +6,8 @@ namespace StepmaniaUtils.StepData
     [DebuggerDisplay("{PlayStyle} - {Difficulty} - {DifficultyRating} - {ChartAuthor}")]
     public class StepMetadata
     {
+        internal StepMetadata() { }
+
         public PlayStyle PlayStyle { get; set; }
         public SongDifficulty Difficulty { get; set; }
         public int DifficultyRating { get; set; }

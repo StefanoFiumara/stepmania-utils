@@ -6,7 +6,7 @@ namespace StepmaniaUtils.Extensions
 {
     internal static class EnumExtensions
     {
-        public static SmFileAttribute ToAttribute(this string attr)
+        public static SmFileAttribute AsSmFileAttribute(this string attr)
         {
             if (Enum.TryParse(attr, true, out SmFileAttribute result))
             {
@@ -16,7 +16,7 @@ namespace StepmaniaUtils.Extensions
             return SmFileAttribute.UNDEFINED;
         }
         
-        public static PlayStyle ToStyleEnum(this string styleName)
+        public static PlayStyle AsPlayStyle(this string styleName)
         {
             styleName = styleName.Trim().TrimEnd(':');
             switch (styleName)
@@ -36,7 +36,7 @@ namespace StepmaniaUtils.Extensions
             }
         }
 
-        public static SongDifficulty ToSongDifficultyEnum(this string difficultyName)
+        public static SongDifficulty AsSongDifficulty(this string difficultyName)
         {
             return
                 Enum.GetValues(typeof(SongDifficulty))
