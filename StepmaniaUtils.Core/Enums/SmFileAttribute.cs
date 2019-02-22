@@ -28,6 +28,16 @@ namespace StepmaniaUtils.Enums
         FGCHANGES,
         KEYSOUNDS,
         DISPLAYBPM,
-        NOTES
+        NOTES,
+
+        //SSC tags
+        NOTEDATA,
+        CHARTNAME,
+        STEPSTYPE,
+        DESCRIPTION,
+        CHARTSTYLE,
+        DIFFICULTY,
+        METER,
+        RADARVALUES
     }
 }

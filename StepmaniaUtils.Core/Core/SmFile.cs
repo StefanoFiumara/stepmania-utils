@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepData;
 using StepmaniaUtils.StepGenerator;
@@ -61,17 +60,17 @@ namespace StepmaniaUtils.Core
 
         private void ParseFile()
         {
-            using (var reader = new SmFileReader(FilePath))
+            using (var reader = StepmaniaFileReaderFactory.CreateReader(FilePath))
             {
                 while (reader.ReadNextTag(out SmFileAttribute tag))
                 {
-                    if (tag == SmFileAttribute.NOTES)
+                    if (reader.State == ReaderState.ReadingChartMetadata)
                     {
                         var stepData = reader.ReadStepchartMetadata();
 
                         ChartMetadata.Add(stepData);
 
-                        reader.SkipValue();
+                        reader.SkipTagValue();
                     }
                     else
                     {

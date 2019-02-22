@@ -9,53 +9,39 @@ using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils.Core
 {
-    /// <inheritdoc />
-    /// <summary>
-    /// StreamReader wrapper designed to expose methods to properly parse a stepmania .sm file.
-    /// </summary>
-    public class SmFileReader : IDisposable
+    public class SmFileReader : IStepmaniaFileReader
     {
-        private readonly StreamReader _reader;
-        private readonly FileStream _stream;
+        protected readonly StreamReader _reader;
+        protected readonly FileStream _stream;
 
-        private readonly StringBuilder _buffer;
+        protected readonly StringBuilder _buffer;
 
-        private SmFileAttribute _lastReadTag;
+        protected SmFileAttribute _lastReadTag;
+        
+        public string FilePath { get; }
 
-        /// <summary>
-        /// True when the reader is positioned to read Note Data
-        /// </summary>
-        public bool IsParsingNoteData { get; private set; }
+        public ReaderState State { get; protected set; }
 
-        /// <summary>
-        /// Initializes the SmFileReader with the given smFilePath
-        /// </summary>
-        /// <param name="smFilePath"></param>
-        public SmFileReader(string smFilePath)
+        public bool IsParsingNoteData => State == ReaderState.ReadingNoteData;
+
+        internal SmFileReader(string smFilePath)
         {
             if (string.IsNullOrEmpty(smFilePath))
             {
                 throw new ArgumentNullException(nameof(smFilePath), "*.sm file path cannot be null or empty");
             }
-            if (!smFilePath.ToLower().EndsWith(".sm"))
-            {
-                throw new ArgumentException("File path must point to a *.sm file", nameof(smFilePath));
-            }
-
+            
             _stream = new FileStream(smFilePath, FileMode.Open, FileAccess.Read);
             _reader = new StreamReader(_stream);
             _buffer = new StringBuilder();
 
             _lastReadTag = SmFileAttribute.UNDEFINED;
-            IsParsingNoteData = false;
+
+            FilePath = smFilePath;
+            State = ReaderState.Default;
         }
-        
-        /// <summary>
-        /// Reads the .sm file up until it encounters the next header tag
-        /// </summary>
-        /// <param name="tag">The header tag that was read</param>
-        /// <returns>True if a valid header tag was found, false otherwise</returns>
-        public bool ReadNextTag(out SmFileAttribute tag)
+
+        public virtual bool ReadNextTag(out SmFileAttribute tag)
         {
             _buffer.Clear();
             
@@ -78,30 +64,21 @@ namespace StepmaniaUtils.Core
                     }
 
                     _lastReadTag = tag;
-                    IsParsingNoteData = false;
+                    State = tag == SmFileAttribute.NOTES ? ReaderState.ReadingChartMetadata : ReaderState.ReadingTagValue;
                     return true;
                 }
             }
 
             tag = SmFileAttribute.UNDEFINED;
-            IsParsingNoteData = false;
+            State = ReaderState.Default;
             return false;
         }
 
-
-        /// <summary>
-        /// Reads the value of the most recently parsed header tag.
-        /// </summary>
         public string ReadTagValue()
         {
-            if (_reader.Peek() != ':')
+            if (State != ReaderState.ReadingTagValue)
             {
                 throw new InvalidOperationException("Reader is not positioned to read a tag value.");
-            }
-
-            if (_reader.Peek() == ':' && _lastReadTag == SmFileAttribute.NOTES)
-            {
-                throw new InvalidOperationException("Reader is positioned to read #NOTE data, use ReadStepchartMetadata method.");
             }
 
             _reader.Read(); //toss ':' token
@@ -111,16 +88,19 @@ namespace StepmaniaUtils.Core
                 _buffer.Append((char)_reader.Read());
             }
 
-            IsParsingNoteData = false;
+            State = ReaderState.Default;
             return _buffer.ToString().Trim();
         }
 
-        /// <summary>
-        /// Reads stepchart metadata when the reader is positioned on a #NOTES tag.
-        /// </summary>
-        public StepMetadata ReadStepchartMetadata()
+        public void SkipTagValue()
         {
-            if (_lastReadTag != SmFileAttribute.NOTES || _reader.Peek() != ':')
+            while (_reader.Peek() != ';') _reader.Read();
+            State = ReaderState.Default;
+        }
+
+        public virtual StepMetadata ReadStepchartMetadata()
+        {
+            if(State != ReaderState.ReadingChartMetadata)
             {
                 throw new InvalidOperationException("Reader is not positioned to read chart metadata.");
             }
@@ -138,26 +118,14 @@ namespace StepmaniaUtils.Core
             //Skip groove radar values - no one cares
             ReadNoteHeaderSection();
 
-            IsParsingNoteData = true;
+            State = ReaderState.ReadingNoteData;
 
             return stepData;
         }
 
-        /// <summary>
-        /// Skip the stream reader ahead to the end of the current tag value
-        /// </summary>
-        public void SkipValue()
-        {
-            while (_reader.Peek() != ';') _reader.Read();
-            IsParsingNoteData = false;
-        }
-
-        /// <summary>
-        /// Reads and returns a measure of data for the chart currently being parsed.
-        /// </summary>
         public IEnumerable<string> ReadMeasure()
         {
-            if (!IsParsingNoteData)
+            if (State != ReaderState.ReadingNoteData)
             {
                 throw new InvalidOperationException("Reader is not positioned to read measure data.");
             }
@@ -173,7 +141,7 @@ namespace StepmaniaUtils.Core
 
             if (_reader.Peek() == ';')
             {
-                IsParsingNoteData = false;
+                State = ReaderState.Default;
             }
             else
             {

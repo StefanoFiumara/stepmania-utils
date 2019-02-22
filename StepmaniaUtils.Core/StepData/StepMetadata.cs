@@ -12,5 +12,7 @@ namespace StepmaniaUtils.StepData
         public SongDifficulty Difficulty { get; set; }
         public int DifficultyRating { get; set; }
         public string ChartAuthor { get; set; }
+
+        public string ChartName { get; set; }
     }
 }

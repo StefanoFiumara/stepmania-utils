@@ -71,7 +71,7 @@ namespace StepmaniaUtils.Tests
                 }
             }
 
-            using (var reader = new SmFileReader(smFilePath))
+            using (var reader = StepmaniaFileReaderFactory.CreateReader(smFilePath))
             {
                 while (reader.ReadNextTag(out SmFileAttribute tag))
                 {

@@ -39,12 +39,27 @@ namespace StepmaniaUtils.Tests
 
 
         [Fact]
-        public void GenerateTestDataConstants()
+        public void GenerateITGOfficialsTestDataConstants()
         {
             var result = Directory.EnumerateFiles("TestData/ITGOfficial/")
                 .Select(f => new FileInfo(f))
                 .Select(f =>
                     $"public const string {f.NameWithoutExt().Replace(' ', '_').ToUpper().AsVariable()} = \"TestData/ITGOfficial/{f.Name}\";")
+                .ToList();
+
+            string declarations = string.Join('\n', result);
+
+            output.WriteLine(declarations);
+        }
+
+        [Fact]
+        public void GenerateSscTestDataConstants()
+        {
+            var result = Directory.EnumerateFiles("TestData/SSC/", "*.*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWith(".ssc"))
+                .Select(f => new FileInfo(f))
+                .Select(f =>
+                    $"public const string {f.NameWithoutExt().Replace(' ', '_').ToUpper().AsVariable()} = \"TestData/SSC/{f.Directory.Name}/{f.Name}\";")
                 .ToList();
 
             string declarations = string.Join('\n', result);

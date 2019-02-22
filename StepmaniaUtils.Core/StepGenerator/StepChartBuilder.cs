@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using StepmaniaUtils.Core;
@@ -29,11 +30,12 @@ namespace StepmaniaUtils.StepGenerator
 
         private static string GenerateLightsChart(string file, StepMetadata referenceData)
         {
-            using (var reader = new SmFileReader(file))
+            using (var reader = StepmaniaFileReaderFactory.CreateReader(file))
             {
                 while (reader.ReadNextTag(out SmFileAttribute tag))
                 {
-                    if (tag != SmFileAttribute.NOTES) continue;
+                    if(reader.State != ReaderState.ReadingChartMetadata)
+                        continue;
 
                     var stepData = reader.ReadStepchartMetadata();
 
@@ -47,16 +49,9 @@ namespace StepmaniaUtils.StepGenerator
             throw new Exception($"Could not find note data to reference in {file}");
         }
 
-        private static string GenerateLightsChart(SmFileReader reader)
+        private static string GenerateLightsChart(IStepmaniaFileReader reader)
         {
-            var result = new StringBuilder()
-                  .AppendLine("//---------------lights-cabinet-----------------")
-                  .AppendLine("#NOTES:")
-                  .AppendLine("    lights-cabinet:")
-                  .AppendLine("    auto-generated:")
-                  .AppendLine("    Easy:")
-                  .AppendLine("    1:")
-                  .AppendLine("    0.000,0.000,0.000,0.000,0.000:");
+            var result = GetLightsChartHeader(reader.FilePath);
             
             var measureData = new List<string>(192);
 
@@ -113,7 +108,38 @@ namespace StepmaniaUtils.StepGenerator
 
             return result.ToString();
         }
-        
+
+        private static StringBuilder GetLightsChartHeader(string smFilePath)
+        {
+            if (Path.GetExtension(smFilePath) == ".sm")
+            {
+                return new StringBuilder()
+                    .AppendLine("//---------------lights-cabinet-----------------")
+                    .AppendLine("#NOTES:")
+                    .AppendLine("    lights-cabinet:")
+                    .AppendLine("    auto-generated:")
+                    .AppendLine("    Easy:")
+                    .AppendLine("    1:")
+                    .AppendLine("    0.000,0.000,0.000,0.000,0.000:");
+            }
+            else
+            {
+                return new StringBuilder()
+                    .AppendLine("//---------------lights-cabinet-----------------")
+                    .AppendLine("#NOTEDATA:;")
+                    .AppendLine("#CHARTNAME:lights;")
+                    .AppendLine("#STEPSTYPE:lights-cabinet;")
+                    .AppendLine("#DESCRIPTION:auto-generated;")
+                    .AppendLine("#CHARTSTYLE:;")
+                    .AppendLine("#DIFFICULTY:Easy;")
+                    .AppendLine("#METER:1;")
+                    .AppendLine("#RADARVALUES:0.000,0.000,0.000,0.000,0.000;")
+                    .AppendLine("#CREDIT:Fano;") // ;)
+                    .AppendLine("#DISPLAYBPM:120.00;")
+                    .AppendLine("#NOTES:");
+            }
+        }
+
         private static string MapDoubles(string marqueeLights)
         {
             var sb = new StringBuilder();
