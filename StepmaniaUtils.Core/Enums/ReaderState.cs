@@ -1,4 +1,4 @@
-﻿namespace StepmaniaUtils.Core
+﻿namespace StepmaniaUtils.Enums
 {
     public enum ReaderState
     {

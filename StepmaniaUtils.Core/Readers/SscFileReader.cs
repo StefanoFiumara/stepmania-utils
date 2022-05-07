@@ -3,7 +3,7 @@ using StepmaniaUtils.Enums;
 using StepmaniaUtils.Extensions;
 using StepmaniaUtils.StepData;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils.Readers
 {
     public class SscFileReader : SmFileReader
     {
@@ -13,7 +13,7 @@ namespace StepmaniaUtils.Core
         /// <param name="sscFilePath"></param>
         internal SscFileReader(string sscFilePath) : base(sscFilePath)
         {
-            
+
         }
 
         public override bool ReadNextTag(out SmFileAttribute tag)

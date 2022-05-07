@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils.Readers
 {
     public static class StepmaniaFileReaderFactory
     {

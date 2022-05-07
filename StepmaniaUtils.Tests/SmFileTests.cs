@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using StepmaniaUtils.Core;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepGenerator;
+using StepmaniaUtils.Tests.TestConstants;
 using Xunit;
 
 namespace StepmaniaUtils.Tests
@@ -224,7 +224,7 @@ namespace StepmaniaUtils.Tests
         {
             var smFileCopy = $"{smFilePath}.test.sm";
             string backupFilePath = $"{smFileCopy}.backup";
-            
+
             File.Copy(smFilePath, smFileCopy, true);
 
             Assert.Throws<InvalidOperationException>(() =>

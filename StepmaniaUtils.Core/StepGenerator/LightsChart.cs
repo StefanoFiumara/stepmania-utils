@@ -1,5 +1,4 @@
-﻿using System.IO;
-using StepmaniaUtils.StepData;
+﻿using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils.StepGenerator
 {

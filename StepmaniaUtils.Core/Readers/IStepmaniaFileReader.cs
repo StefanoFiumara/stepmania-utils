@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepData;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils.Readers
 {
     public interface IStepmaniaFileReader : IDisposable
     {

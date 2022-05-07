@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using StepmaniaUtils.Enums;
 
@@ -20,7 +19,7 @@ namespace StepmaniaUtils.StepData
         {
             _stepCharts.Add(stepData);
         }
-        
+
         public StepMetadata GetSteps(PlayStyle style, SongDifficulty difficulty)
         {
             return StepCharts.FirstOrDefault(c => c.PlayStyle == style && c.Difficulty == difficulty);

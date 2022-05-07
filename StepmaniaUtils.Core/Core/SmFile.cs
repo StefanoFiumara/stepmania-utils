@@ -4,10 +4,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using StepmaniaUtils.Enums;
+using StepmaniaUtils.Readers;
 using StepmaniaUtils.StepData;
 using StepmaniaUtils.StepGenerator;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils
 {
     public class SmFile
     {
@@ -16,7 +17,7 @@ namespace StepmaniaUtils.Core
 
         public string SongTitle => this[SmFileAttribute.TITLE];
         public string Artist => this[SmFileAttribute.ARTIST];
-        
+
         public string Directory { get; }
         public string BannerPath => this[SmFileAttribute.BANNER];
         public string Group { get; }
@@ -24,11 +25,11 @@ namespace StepmaniaUtils.Core
         public string DisplayBpm { get; private set; }
 
         public ChartMetadata ChartMetadata { get; private set; }
-        
+
         private IDictionary<SmFileAttribute, string> _attributes;
 
         public IReadOnlyDictionary<SmFileAttribute, string> Attributes => new ReadOnlyDictionary<SmFileAttribute, string>(_attributes);
-        
+
         public SmFile(string filePath)
         {
             if (!Path.IsPathRooted(filePath))

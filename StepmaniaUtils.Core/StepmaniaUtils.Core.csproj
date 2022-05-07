@@ -1,9 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>StepmaniaUtils.Core</AssemblyName>
-    <RootNamespace>StepmaniaUtils.Core</RootNamespace>
+    <TargetFramework>net5.0</TargetFramework>
+    <AssemblyName>Fano.StepmaniaUtils</AssemblyName>
+    <RootNamespace>StepmaniaUtils</RootNamespace>
+    <LangVersion>default</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Fano.StepmaniaUtils</PackageId>
+    <Authors>Fano</Authors>
+    <Description>A small utility used to parse Stepmania's .sm and .ssc files</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 </Project>

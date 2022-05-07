@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
-using StepmaniaUtils.Core;
 using StepmaniaUtils.Enums;
 using StepmaniaUtils.StepGenerator;
+using StepmaniaUtils.Tests.TestConstants;
 using Xunit;
 
 namespace StepmaniaUtils.Tests
@@ -27,7 +27,7 @@ namespace StepmaniaUtils.Tests
             var sscFile = new SmFile(sscFilePath);
 
             var actualPlayStyle = sscFile.ChartMetadata.StepCharts.Single().PlayStyle;
-            
+
             Assert.Equal(expectedPlayStyle, actualPlayStyle);
         }
 
@@ -38,7 +38,7 @@ namespace StepmaniaUtils.Tests
             var sscFile = new SmFile(sscFilePath);
 
             var actualDifficulty = sscFile.ChartMetadata.StepCharts.Single().Difficulty;
-            
+
             Assert.Equal(expecteDifficulty, actualDifficulty);
         }
 
@@ -49,7 +49,7 @@ namespace StepmaniaUtils.Tests
             var sscFile = new SmFile(sscFilePath);
 
             var actualMeter = sscFile.ChartMetadata.StepCharts.Single().DifficultyRating;
-            
+
             Assert.Equal(expectedMeter, actualMeter);
         }
 

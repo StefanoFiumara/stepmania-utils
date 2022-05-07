@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using StepmaniaUtils.Core;
 using StepmaniaUtils.Enums;
+using StepmaniaUtils.Readers;
 using StepmaniaUtils.StepData;
 
 namespace StepmaniaUtils.StepGenerator
@@ -24,7 +24,7 @@ namespace StepmaniaUtils.StepGenerator
                 throw new ArgumentException("Could not find a reference chart.", nameof(file));
 
             var lightsData = GenerateLightsChart(file.FilePath, reference);
-            
+
             return new LightsChart(lightsData, reference);
         }
 
@@ -45,14 +45,14 @@ namespace StepmaniaUtils.StepGenerator
                     }
                 }
             }
-            
+
             throw new Exception($"Could not find note data to reference in {file}");
         }
 
         private static string GenerateLightsChart(IStepmaniaFileReader reader)
         {
             var result = GetLightsChartHeader(reader.FilePath);
-            
+
             var measureData = new List<string>(192);
 
             bool isHolding = false;
@@ -80,7 +80,7 @@ namespace StepmaniaUtils.StepGenerator
                     bool isJump = marqueeLights.Count(c => c != '0') >= 2;
 
                     string bassLights = (hasNote && isQuarterBeat) || isJump ? "11" : "00";
-                    
+
                     if (isHoldBegin && !isHolding)
                     {
                         bassLights = "22"; //hold start

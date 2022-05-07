@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace StepmaniaUtils.Tests
+namespace StepmaniaUtils.Tests.TestConstants
 {
     public static class ITGOfficials
     {

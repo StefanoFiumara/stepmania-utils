@@ -7,7 +7,7 @@ using StepmaniaUtils.Enums;
 using StepmaniaUtils.Extensions;
 using StepmaniaUtils.StepData;
 
-namespace StepmaniaUtils.Core
+namespace StepmaniaUtils.Readers
 {
     public class SmFileReader : IStepmaniaFileReader
     {
